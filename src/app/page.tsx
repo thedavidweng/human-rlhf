@@ -95,6 +95,8 @@ export default function Home() {
   // Meme popup state
   const [activeMeme, setActiveMeme] = useState<MemeItem | null>(null);
   const [selectedOption, setSelectedOption] = useState<ShuffledOption | null>(null);
+  const [selectedKey, setSelectedKey] = useState<"A" | "B" | null>(null);
+  const [isSelecting, setIsSelecting] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
   // Initialize or restart test round with randomized questions
@@ -109,6 +111,8 @@ export default function Home() {
     setIsFinished(false);
     setActiveMeme(null);
     setSelectedOption(null);
+    setSelectedKey(null);
+    setIsSelecting(false);
 
     if (selected.length > 0) {
       setCurrentActiveQuestion(makeActiveQuestion(selected[0], lang));
@@ -159,10 +163,12 @@ export default function Home() {
     }
   };
 
-  // Handle option selection
+  // Handle option selection with concurrency lock to avoid duplicate answer recording
   const handleSelectOption = async (option: ShuffledOption) => {
-    if (!currentActiveQuestion) return;
+    if (!currentActiveQuestion || isSelecting || activeMeme) return;
 
+    setIsSelecting(true);
+    setSelectedKey(option.key);
     playClickSound();
 
     // Play alignment audio
@@ -182,15 +188,21 @@ export default function Home() {
     setAnswers((prev) => [...prev, newRecord]);
     setSelectedOption(option);
 
-    // Fetch meme (live Giphy or curated pool)
-    const meme = await fetchMeme(option.alignment, option.memeKeywords);
-    setActiveMeme(meme);
+    try {
+      // Fetch meme (live Giphy or curated pool)
+      const meme = await fetchMeme(option.alignment, option.memeKeywords);
+      setActiveMeme(meme);
+    } finally {
+      setIsSelecting(false);
+    }
   };
 
   // Move to next question or complete round
   const handleNext = () => {
     setActiveMeme(null);
     setSelectedOption(null);
+    setSelectedKey(null);
+    setIsSelecting(false);
 
     const nextIdx = currentIndex + 1;
     if (nextIdx < roundQuestions.length) {
@@ -219,20 +231,22 @@ export default function Home() {
     const qPct = Math.round((qwenCount / total) * 100);
     const nPct = 100 - qPct;
 
-    const t = I18N[language];
-    let archetypeData = t.archetypes.balanced;
+    let archetypeKey: keyof typeof I18N.zh.archetypes = "balanced";
 
     if (qPct >= 80) {
-      archetypeData = t.archetypes.pureQwen;
+      archetypeKey = "pureQwen";
     } else if (qPct >= 60) {
-      archetypeData = t.archetypes.leaningQwen;
+      archetypeKey = "leaningQwen";
     } else if (qPct >= 40) {
-      archetypeData = t.archetypes.balanced;
+      archetypeKey = "balanced";
     } else if (qPct >= 20) {
-      archetypeData = t.archetypes.leaningNous;
+      archetypeKey = "leaningNous";
     } else {
-      archetypeData = t.archetypes.pureNous;
+      archetypeKey = "pureNous";
     }
+
+    const zhArch = I18N.zh.archetypes[archetypeKey];
+    const enArch = I18N.en.archetypes[archetypeKey];
 
     // Category breakdown
     const categoryScores: Record<
@@ -268,12 +282,12 @@ export default function Home() {
       total,
       qwenPercent: qPct,
       nousPercent: nPct,
-      title: { zh: archetypeData.title, en: archetypeData.title },
-      archetype: { zh: archetypeData.archetype, en: archetypeData.archetype },
-      description: { zh: archetypeData.description, en: archetypeData.description },
+      title: { zh: zhArch.title, en: enArch.title },
+      archetype: { zh: zhArch.archetype, en: enArch.archetype },
+      description: { zh: zhArch.description, en: enArch.description },
       categoryScores
     };
-  }, [answers, qwenCount, nousCount, roundQuestions, language]);
+  }, [answers, qwenCount, nousCount, roundQuestions]);
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-950 text-neutral-100 selection:bg-amber-500 selection:text-black">
@@ -328,7 +342,9 @@ export default function Home() {
               totalQuestions={roundQuestions.length}
               language={language}
               onSelectOption={handleSelectOption}
-              disabled={Boolean(activeMeme)}
+              disabled={Boolean(activeMeme) || isSelecting || giphyModalOpen || explainerModalOpen || benchmarkModalOpen}
+              isSelecting={isSelecting}
+              selectedOptionKey={selectedKey}
             />
           ) : isFinished ? (
             <ResultCard

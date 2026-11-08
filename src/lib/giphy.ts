@@ -4,16 +4,27 @@ import { getRandomCuratedMeme } from "../data/memes";
 const GIPHY_STORAGE_KEY = "human_rlhf_giphy_api_key";
 
 export function getStoredGiphyKey(): string {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(GIPHY_STORAGE_KEY) || process.env.NEXT_PUBLIC_GIPHY_API_KEY || "";
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(GIPHY_STORAGE_KEY);
+      if (stored) return stored;
+    } catch {
+      // LocalStorage access may be restricted
+    }
+  }
+  return process.env.NEXT_PUBLIC_GIPHY_API_KEY || "";
 }
 
 export function setStoredGiphyKey(key: string): void {
   if (typeof window === "undefined") return;
-  if (!key.trim()) {
-    localStorage.removeItem(GIPHY_STORAGE_KEY);
-  } else {
-    localStorage.setItem(GIPHY_STORAGE_KEY, key.trim());
+  try {
+    if (!key.trim()) {
+      localStorage.removeItem(GIPHY_STORAGE_KEY);
+    } else {
+      localStorage.setItem(GIPHY_STORAGE_KEY, key.trim());
+    }
+  } catch {
+    // Ignore storage quota or privacy mode errors
   }
 }
 
@@ -36,7 +47,8 @@ export async function fetchMeme(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2500);
 
-    const endpoint = `https://api.giphy.com/v1/gifs/random?api_key=${encodeURIComponent(apiKey)}&tag=${encodeURIComponent(queryTag)}&rating=pg-13`;
+    // Search query endpoint offers 10x broader keyword coverage than strict tag-only endpoint
+    const endpoint = `https://api.giphy.com/v1/gifs/search?api_key=${encodeURIComponent(apiKey)}&q=${encodeURIComponent(queryTag)}&limit=15&rating=pg-13`;
     const response = await fetch(endpoint, { signal: controller.signal });
     clearTimeout(timeoutId);
 
@@ -46,19 +58,23 @@ export async function fetchMeme(
     }
 
     const json = await response.json();
-    const gif = json.data;
+    const gifList = Array.isArray(json.data) ? json.data : (json.data ? [json.data] : []);
 
-    if (!gif || !gif.images) {
+    if (gifList.length === 0) {
       return fallback;
     }
 
-    const gifUrl = gif.images.original?.url || gif.images.downsized?.url || gif.images.fixed_height?.url;
+    // Pick a random gif from top search results
+    const gif = gifList[Math.floor(Math.random() * gifList.length)];
+    const gifUrl = gif.images?.original?.url || gif.images?.downsized?.url || gif.images?.fixed_height?.url;
     if (!gifUrl) return fallback;
 
     return {
       id: `giphy-${gif.id || Date.now()}`,
       alignment,
-      title: alignment === "qwen" ? { zh: "🇨🇳 实时 Giphy 召唤：芝麻信用 +100！", en: "🇨🇳 Live Giphy: Social Credit +100!" } : { zh: "🦅 实时 Giphy 召唤：自由降临！", en: "🦅 Live Giphy: Freedom Delivered!" },
+      title: alignment === "qwen" 
+        ? { zh: "🇨🇳 实时 Giphy 召唤：芝麻信用 +100！", en: "🇨🇳 Live Giphy: Social Credit +100!" } 
+        : { zh: "🦅 实时 Giphy 召唤：自由降临！", en: "🦅 Live Giphy: Freedom Delivered!" },
       caption: {
         zh: `通过 Giphy API 检索标签 [${queryTag}] 获得实时梗图。`,
         en: `Fetched dynamically from Giphy API using tag [${queryTag}].`
@@ -68,6 +84,7 @@ export async function fetchMeme(
         en: "Giphy Live"
       },
       imageUrl: gifUrl,
+      fallbackSvg: fallback.fallbackSvg,
       alt: gif.title || `${alignment} live meme`
     };
   } catch (err) {

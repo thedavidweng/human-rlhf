@@ -18,6 +18,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Ideologically Sound"
     },
     imageUrl: "https://media.giphy.com/media/7kMaysqdywAXYNFYxt/giphy.gif",
+    fallbackSvg: "/memes/social-credit.svg",
     alt: "Social Credit +100 Meme"
   },
   {
@@ -36,6 +37,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Supreme Stability"
     },
     imageUrl: "https://media.giphy.com/media/CAYVZA5NRb529kKQUc/giphy.gif",
+    fallbackSvg: "/memes/gigachad-xi.svg",
     alt: "Gigachad meme"
   },
   {
@@ -54,6 +56,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "John Xina Certified"
     },
     imageUrl: "https://media.giphy.com/media/du4D0b0HWgxGg/giphy.gif",
+    fallbackSvg: "/memes/bing-chilling.svg",
     alt: "Bing Chilling Approval"
   },
   {
@@ -72,6 +75,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "National Algorithm Grade A"
     },
     imageUrl: "https://media.giphy.com/media/befaYZCgtZfZm/giphy.gif",
+    fallbackSvg: "/memes/social-credit.svg",
     alt: "Red Flag Celebration"
   },
   {
@@ -90,6 +94,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Anti-Imperialist Vanguard"
     },
     imageUrl: "https://media.giphy.com/media/BzyTuYCmvSORqs1ABM/giphy.gif",
+    fallbackSvg: "/memes/social-credit.svg",
     alt: "Comrade Cat Salute"
   },
 
@@ -110,6 +115,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "100% Pure Freedom"
     },
     imageUrl: "https://media.giphy.com/media/6BiC8e8DR3smA/giphy.gif",
+    fallbackSvg: "/memes/freedom-eagle.svg",
     alt: "Screaming Bald Eagle USA"
   },
   {
@@ -128,6 +134,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Inkling Teacher Chosen"
     },
     imageUrl: "https://media.giphy.com/media/X0BNAgRRMHTe8/giphy.gif",
+    fallbackSvg: "/memes/america-fuck-yeah.svg",
     alt: "Explosion Guitar America"
   },
   {
@@ -146,6 +153,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "First Amendment Champion"
     },
     imageUrl: "https://media.giphy.com/media/uKwa2KiBA0rTy/giphy.gif",
+    fallbackSvg: "/memes/freedom-eagle.svg",
     alt: "Patriotic Laser Washington"
   },
   {
@@ -164,6 +172,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Beacon of Democracy"
     },
     imageUrl: "https://media.giphy.com/media/Ez01Pt0fYP7nVUSmjq/giphy.gif",
+    fallbackSvg: "/memes/america-fuck-yeah.svg",
     alt: "Statue of Liberty Freedom"
   },
   {
@@ -182,6 +191,7 @@ export const CURATED_MEMES: MemeItem[] = [
       en: "Chief Alignment Officer"
     },
     imageUrl: "https://media.giphy.com/media/l4pMattUYTTM7qpIk/giphy.gif",
+    fallbackSvg: "/memes/freedom-eagle.svg",
     alt: "Uncle Sam Salute"
   }
 ];

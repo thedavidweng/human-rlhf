@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#083344" />
+      <stop offset="50%" stop-color="#0e7490" />
+      <stop offset="100%" stop-color="#164e63" />
+    </linearGradient>
+    <filter id="iceglow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#bg)" />
+  <rect x="15" y="15" width="570" height="370" fill="none" stroke="#67e8f9" stroke-width="2" rx="16" />
+
+  <!-- Central Meme Graphic -->
+  <g transform="translate(300, 140)">
+    <circle cx="0" cy="0" r="70" fill="#06b6d4" opacity="0.25" filter="url(#iceglow)" />
+    <text x="0" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="80" text-anchor="middle">🍦</text>
+  </g>
+
+  <!-- Badge -->
+  <rect x="60" y="245" width="480" height="56" rx="14" fill="#082f49" stroke="#38bdf8" stroke-width="2" />
+  <text x="300" y="282" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="24" fill="#e0f2fe" text-anchor="middle" letter-spacing="1">
+    BING CHILLING 早上好中国!
+  </text>
+
+  <!-- Subtitle -->
+  <text x="300" y="333" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="15" fill="#bae6fd" text-anchor="middle">
+    现在我有冰淇淋 · 速度与激情 9 官方认证对齐
+  </text>
+  <text x="300" y="358" font-family="monospace" font-size="11" fill="#7dd3fc" text-anchor="middle">
+    ZHONG XINA REWARD FUNCTION HIT MAXIMUM OVERDRIVE
+  </text>
+</svg>

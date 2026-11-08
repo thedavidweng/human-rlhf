@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+    <filter id="laserRed">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="400" fill="url(#bg)" />
+
+  <!-- Stars and Stripes motif -->
+  <g fill="#ffffff" opacity="0.12">
+    <polygon points="40,40 45,55 60,55 48,65 52,80 40,70 28,80 32,65 20,55 35,55" />
+    <polygon points="560,40 565,55 580,55 568,65 572,80 560,70 548,80 552,65 540,55 555,55" />
+    <polygon points="520,320 525,335 540,335 528,345 532,360 520,350 508,360 512,345 500,335 515,335" />
+    <polygon points="80,320 85,335 100,335 88,345 92,360 80,350 68,360 72,345 60,335 75,335" />
+  </g>
+
+  <!-- Outer Border -->
+  <rect x="15" y="15" width="570" height="370" fill="none" stroke="#60a5fa" stroke-width="2.5" rx="16" />
+
+  <!-- Eagle Central Symbol -->
+  <g transform="translate(300, 145)">
+    <circle cx="0" cy="0" r="75" fill="#3b82f6" opacity="0.2" />
+    <text x="0" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="85" text-anchor="middle">🦅</text>
+    <!-- Laser Eyes -->
+    <line x1="-12" y1="-8" x2="-270" y2="-60" stroke="#ef4444" stroke-width="4.5" filter="url(#laserRed)" stroke-linecap="round" />
+    <line x1="12" y1="-8" x2="270" y2="-60" stroke="#ef4444" stroke-width="4.5" filter="url(#laserRed)" stroke-linecap="round" />
+  </g>
+
+  <!-- Headline Banner -->
+  <rect x="60" y="250" width="480" height="54" rx="12" fill="#1e1b4b" stroke="#60a5fa" stroke-width="2" />
+  <text x="300" y="287" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="25" fill="#93c5fd" text-anchor="middle" letter-spacing="1">
+    DEMOCRACY DELIVERED! 🦅
+  </text>
+
+  <!-- Subtitle -->
+  <text x="300" y="335" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="15" fill="#e0e7ff" text-anchor="middle">
+    自由之鹰长鸣 · 宪政人权 +50 · FICO 信用分飙升
+  </text>
+  <text x="300" y="360" font-family="monospace" font-size="11" fill="#93c5fd" text-anchor="middle">
+    NOUS RESEARCH DPO TARGET COMPLIANT · 100% PURE FREEDOM
+  </text>
+</svg>

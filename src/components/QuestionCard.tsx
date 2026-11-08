@@ -12,6 +12,8 @@ interface QuestionCardProps {
   language: Language;
   onSelectOption: (option: ShuffledOption) => void;
   disabled?: boolean;
+  isSelecting?: boolean;
+  selectedOptionKey?: "A" | "B" | null;
 }
 
 export const QuestionCard: React.FC<QuestionCardProps> = ({
@@ -20,29 +22,35 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   totalQuestions,
   language,
   onSelectOption,
-  disabled = false
+  disabled = false,
+  isSelecting = false,
+  selectedOptionKey = null
 }) => {
   const [showBilingual, setShowBilingual] = useState(false);
   const t = I18N[language];
   const q = activeQuestion.question;
 
-  // Keyboard shortcut listener (1/A for Option A, 2/B for Option B)
+  // Keyboard shortcut listener (1/A/ArrowLeft for Option A, 2/B/ArrowRight for Option B)
   useEffect(() => {
+    if (disabled || isSelecting) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (disabled) return;
+      if (disabled || isSelecting) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       const key = e.key.toUpperCase();
-      if (key === "1" || key === "A") {
+      if (key === "1" || key === "A" || e.key === "ArrowLeft") {
+        e.preventDefault();
         onSelectOption(activeQuestion.options.A);
-      } else if (key === "2" || key === "B") {
+      } else if (key === "2" || key === "B" || e.key === "ArrowRight") {
+        e.preventDefault();
         onSelectOption(activeQuestion.options.B);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [disabled, activeQuestion, onSelectOption]);
+  }, [disabled, isSelecting, activeQuestion, onSelectOption]);
 
   const primaryPrompt = q.prompt[language];
   const secondaryPrompt = language === "zh" ? q.prompt.en : q.prompt.zh;
@@ -133,20 +141,35 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       <div className="grid gap-3.5 sm:grid-cols-2">
         {(["A", "B"] as const).map((key) => {
           const opt = activeQuestion.options[key];
+          const isThisSelected = isSelecting && selectedOptionKey === key;
+          const isOtherSelected = isSelecting && selectedOptionKey !== key;
+
           return (
             <button
               key={key}
               onClick={() => onSelectOption(opt)}
-              disabled={disabled}
-              className="group relative flex flex-col justify-between rounded-2xl border border-neutral-700/80 bg-neutral-950/70 p-4 sm:p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/60 hover:bg-neutral-800/80 hover:shadow-xl hover:shadow-amber-500/5 focus:outline-none focus:ring-2 focus:ring-amber-500/50 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50"
+              disabled={disabled || isSelecting}
+              className={`group relative flex flex-col justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 active:scale-[0.99] disabled:pointer-events-none ${
+                isThisSelected
+                  ? opt.alignment === "qwen"
+                    ? "border-red-500 bg-red-950/40 ring-2 ring-red-500 shadow-xl shadow-red-500/20 animate-pulse"
+                    : "border-blue-500 bg-blue-950/40 ring-2 ring-blue-500 shadow-xl shadow-blue-500/20 animate-pulse"
+                  : isOtherSelected
+                  ? "border-neutral-800 bg-neutral-950/40 opacity-40"
+                  : "border-neutral-700/80 bg-neutral-950/70 hover:-translate-y-0.5 hover:border-amber-500/60 hover:bg-neutral-800/80 hover:shadow-xl hover:shadow-amber-500/5 disabled:opacity-50"
+              }`}
             >
               {/* Option Key Tag */}
               <div className="mb-3 flex items-center justify-between">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-800 font-mono text-xs font-bold text-amber-400 ring-1 ring-neutral-700 group-hover:bg-amber-500 group-hover:text-black transition">
+                <span className={`flex h-7 w-7 items-center justify-center rounded-lg font-mono text-xs font-bold transition ${
+                  isThisSelected
+                    ? opt.alignment === "qwen" ? "bg-red-500 text-white" : "bg-blue-500 text-white"
+                    : "bg-neutral-800 text-amber-400 ring-1 ring-neutral-700 group-hover:bg-amber-500 group-hover:text-black"
+                }`}>
                   {key}
                 </span>
                 <span className="font-mono text-[11px] text-neutral-500 group-hover:text-neutral-400">
-                  [{key} / {key === "A" ? "1" : "2"}]
+                  {key === "A" ? "[A / 1 / ←]" : "[B / 2 / →]"}
                 </span>
               </div>
 
@@ -155,10 +178,18 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 {opt.text}
               </p>
 
-              {/* Hover Cue */}
+              {/* Hover Cue or Loading State */}
               <div className="mt-4 flex items-center gap-1 text-xs font-medium text-neutral-500 transition group-hover:text-amber-400">
-                <span>Select this response</span>
-                <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
+                {isThisSelected ? (
+                  <span className={opt.alignment === "qwen" ? "text-red-400 font-semibold" : "text-blue-400 font-semibold"}>
+                    {language === "zh" ? "🧠 神经元权重对齐中..." : "🧠 Aligning reward weights..."}
+                  </span>
+                ) : (
+                  <>
+                    <span>Select this response</span>
+                    <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
+                  </>
+                )}
               </div>
             </button>
           );

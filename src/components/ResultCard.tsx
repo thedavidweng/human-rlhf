@@ -33,15 +33,30 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     });
   }, []);
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     const textToCopy = `⚖️ [${t.siteTitle}] ${summary.title[language]}
 📌 ${t.alignmentBreakdown}: Qwen (🇨🇳) ${summary.qwenPercent}% | Freedom (🦅) ${summary.nousPercent}%
 🏆 ${summary.archetype[language]}
 🔗 ${benchmark.sourceName} | Tested on Human RLHF Arena: https://huggingface.co/datasets/NousResearch/arete-data-pairs`;
 
-    navigator.clipboard.writeText(textToCopy);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(textToCopy);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = textToCopy;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (err) {
+      console.warn("Clipboard copy prevented:", err);
+    }
   };
 
   const isQwenDominant = summary.qwenPercent >= 60;
@@ -81,10 +96,10 @@ export const ResultCard: React.FC<ResultCardProps> = ({
         <div className="mb-7 rounded-2xl border border-neutral-800 bg-neutral-950 p-4 sm:p-5">
           <div className="mb-2 flex items-center justify-between text-xs sm:text-sm font-bold">
             <span className="text-red-400">
-              🇨🇳 Qwen Stance: {summary.qwenPercent}% ({summary.qwenCount} 题 / +{summary.qwenCount * 100} SC)
+              🇨🇳 Qwen Stance: {summary.qwenPercent}% ({summary.qwenCount} {language === "zh" ? "题" : "prompts"} / +{summary.qwenCount * 100} SC)
             </span>
             <span className="text-blue-400">
-              🦅 Freedom Stance: {summary.nousPercent}% ({summary.nousCount} 题 / +{summary.nousCount * 50} FICO)
+              🦅 Freedom Stance: {summary.nousPercent}% ({summary.nousCount} {language === "zh" ? "题" : "prompts"} / +{summary.nousCount * 50} FICO)
             </span>
           </div>
 
@@ -123,7 +138,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                       {data.label[language]}
                     </span>
                     <span className="font-mono text-[10px] text-neutral-400">
-                      {data.total} 题
+                      {data.total} {language === "zh" ? "题" : "prompts"}
                     </span>
                   </div>
 

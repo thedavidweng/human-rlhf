@@ -68,6 +68,7 @@ export interface MemeItem {
   caption: LocalizedString;
   badge: LocalizedString;
   imageUrl: string;
+  fallbackSvg?: string;
   alt: string;
 }
 

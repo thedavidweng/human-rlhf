@@ -24,12 +24,25 @@ export const MemeModal: React.FC<MemeModalProps> = ({
 }) => {
   const t = I18N[language];
   const isQwen = option.alignment === "qwen";
+  const [imgSrc, setImgSrc] = useState(meme.imageUrl);
   const [imgLoaded, setImgLoaded] = useState(false);
 
-  // Keyboard shortcut listener for Space or Enter to continue
+  useEffect(() => {
+    setImgSrc(meme.imageUrl);
+    setImgLoaded(false);
+  }, [meme]);
+
+  const handleImgError = () => {
+    const fallback = meme.fallbackSvg || (isQwen ? "/memes/social-credit.svg" : "/memes/freedom-eagle.svg");
+    if (imgSrc !== fallback) {
+      setImgSrc(fallback);
+    }
+  };
+
+  // Keyboard shortcut listener for Space, Enter or Escape to continue
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === " " || e.key === "Enter") {
+      if (e.key === " " || e.key === "Enter" || e.key === "Escape") {
         e.preventDefault();
         onNext();
       }
@@ -37,6 +50,17 @@ export const MemeModal: React.FC<MemeModalProps> = ({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onNext]);
+
+  // Dynamic localization from question object ensures live language toggle updates cleanly
+  const explanationText = isQwen
+    ? question.qwenOption.explanation[language]
+    : question.nousOption.explanation[language];
+  const badgeText = isQwen
+    ? question.qwenOption.badge[language]
+    : question.nousOption.badge[language];
+  const rewardTitleText = meme.title[language] || (isQwen
+    ? question.qwenOption.rewardTitle[language]
+    : question.nousOption.rewardTitle[language]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
@@ -62,7 +86,7 @@ export const MemeModal: React.FC<MemeModalProps> = ({
           </div>
 
           <h2 className="mt-2 text-xl sm:text-2xl font-black tracking-tight text-white">
-            {meme.title[language] || option.rewardTitle}
+            {rewardTitleText}
           </h2>
 
           <p className="mt-1 text-xs sm:text-sm text-neutral-300">
@@ -79,9 +103,10 @@ export const MemeModal: React.FC<MemeModalProps> = ({
           )}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={meme.imageUrl}
+            src={imgSrc}
             alt={meme.alt}
             onLoad={() => setImgLoaded(true)}
+            onError={handleImgError}
             className={`max-h-[300px] w-auto max-w-full object-contain transition-opacity duration-300 ${
               imgLoaded ? "opacity-100" : "opacity-0"
             }`}
@@ -104,12 +129,12 @@ export const MemeModal: React.FC<MemeModalProps> = ({
           </div>
 
           <p className="leading-relaxed text-neutral-300">
-            {option.explanation}
+            {explanationText}
           </p>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-800/80 pt-2.5 text-[11px] text-neutral-400">
             <span className="font-mono">
-              Model Role: <span className="text-white font-semibold">{option.badge}</span>
+              Model Role: <span className="text-white font-semibold">{badgeText}</span>
             </span>
 
             {/* HuggingFace Dataset Link */}
