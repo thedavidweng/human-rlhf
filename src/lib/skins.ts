@@ -18,8 +18,9 @@ export function loadDisplayFont() {
 }
 
 export function skinEarned(summary: Summary): Exclude<Skin, "default"> | null {
-  if (summary.qwen > summary.inkling) return "red";
-  if (summary.inkling > summary.qwen) return "freedom";
+  if (summary.set !== "china") return null;
+  if (summary.first > summary.second) return "red";
+  if (summary.second > summary.first) return "freedom";
   return null;
 }
 

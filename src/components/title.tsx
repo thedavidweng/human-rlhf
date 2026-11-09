@@ -1,5 +1,5 @@
 import { useEffect } from "preact/hooks";
-import { QUESTIONS } from "../data/questions";
+import { QUESTIONS_BY_SET } from "../data/questions";
 import { SETS, type QuestionSet } from "../data/sets";
 import { I18N } from "../lib/i18n";
 import { ROUND_SIZE } from "../lib/round";
@@ -31,7 +31,7 @@ const SLIP_LINES: Record<"A" | "B", [string, boolean][]> = {
 /** The first screen: a poster for the whole site, then the question sets to pick from. */
 export function TitleScreen({ lang, onStart }: { lang: Language; onStart: (set: QuestionSet) => void }) {
   const t = I18N[lang];
-  const first = SETS.find((s) => s.ready)!;
+  const first = SETS[0];
 
   useEffect(() => void loadDisplayFont(), []);
 
@@ -76,31 +76,18 @@ export function TitleScreen({ lang, onStart }: { lang: Language; onStart: (set: 
           {t.setsTitle}
         </h2>
         <ol>
-          {SETS.map((s, i) => {
-            const body = (
-              <>
+          {SETS.map((s, i) => (
+            <li key={s.id}>
+              <button class="set" onClick={() => onStart(s)}>
                 <span class="set-no" aria-hidden="true">
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <strong>{s.title[lang]}</strong>
                 <span class="set-desc">{s.description[lang]}</span>
-                <span class="set-meta">{s.ready ? t.setCount(QUESTIONS.length, ROUND_SIZE) : <span class="set-prep">{t.inPrep}</span>}</span>
-              </>
-            );
-            return (
-              <li key={s.id}>
-                {s.ready ? (
-                  <button class="set" onClick={() => onStart(s)}>
-                    {body}
-                  </button>
-                ) : (
-                  <div class="set" aria-disabled="true">
-                    {body}
-                  </div>
-                )}
-              </li>
-            );
-          })}
+                <span class="set-meta">{t.setCount(QUESTIONS_BY_SET[s.id].length, ROUND_SIZE)}</span>
+              </button>
+            </li>
+          ))}
         </ol>
       </section>
     </main>

@@ -1,3 +1,3 @@
-import { loadQuestions } from "./load" with { type: "macro" };
+import { loadAllQuestions } from "./load" with { type: "macro" };
 
-export const QUESTIONS = loadQuestions();
+export const QUESTIONS_BY_SET = loadAllQuestions();

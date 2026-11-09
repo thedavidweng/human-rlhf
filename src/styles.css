@@ -84,10 +84,14 @@
     --focus: var(--on-bar);
   }
 
-  [data-side="qwen"] {
+  [data-side="qwen"],
+  [data-side="chosen"],
+  [data-side="safe"] {
     --side: var(--qwen);
   }
-  [data-side="inkling"] {
+  [data-side="inkling"],
+  [data-side="rejected"],
+  [data-side="unsafe"] {
     --side: var(--inkling);
   }
 }
@@ -508,6 +512,19 @@
       line-height: 1.2;
       letter-spacing: -0.015em;
     }
+    .notice-categories {
+      margin-top: 8px;
+      font: 600 12px var(--mono);
+      letter-spacing: 0.04em;
+      opacity: 0.85;
+      text-transform: uppercase;
+    }
+  }
+
+  .notice-stamp-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
   }
 
   .meme {
@@ -642,30 +659,6 @@
     margin-top: 10px;
     p {
       margin: 0 0 12px;
-    }
-  }
-
-  .papers {
-    margin: 10px 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    gap: 8px;
-    li {
-      display: grid;
-      gap: 2px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--ink);
-      font-size: 14px;
-    }
-    span {
-      color: var(--ink-2);
-    }
-    a {
-      color: var(--ink-3);
-      font: 12px var(--mono);
-      width: fit-content;
     }
   }
 
@@ -983,10 +976,14 @@
   :root[data-skin] {
     color-scheme: light;
     --signal: var(--red);
-    [data-side="qwen"] {
+    [data-side="qwen"],
+    [data-side="chosen"],
+    [data-side="safe"] {
       --side-solid: #835a10;
     }
-    [data-side="inkling"] {
+    [data-side="inkling"],
+    [data-side="rejected"],
+    [data-side="unsafe"] {
       --side-solid: #24569e;
     }
     .panel {
@@ -1586,11 +1583,6 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     opacity: 0.8;
-  }
-
-  .set-prep {
-    padding: 1px 6px;
-    border: 1px solid currentColor;
   }
 }
 

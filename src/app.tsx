@@ -5,15 +5,14 @@ import { NoticeDialog } from "./components/notice";
 import { SkinBanner, UnlockCard } from "./components/skin";
 import { TitleScreen } from "./components/title";
 import { memeVideo } from "./data/memes";
-import { QUESTIONS } from "./data/questions";
 import { MUSIC } from "./data/music";
-import { DATASET_URL } from "./data/source";
+import { QUESTIONS_BY_SET } from "./data/questions";
 import { SETS, type QuestionSet } from "./data/sets";
 import { I18N } from "./lib/i18n";
 import { drawRound, summarize, type RoundItem } from "./lib/round";
 import { loadDisplayFont, readActive, readUnlocked, save, skinEarned, type Skin } from "./lib/skins";
 import { playChime, playKey, readSoundPreference, setSound, setTrack, startMusic } from "./lib/sound";
-import type { Answer, Language, ModelKey, Translation } from "./types/benchmark";
+import type { Answer, Language, SideKey, Translation } from "./types/benchmark";
 
 const LANG_KEY = "human-rlhf:lang";
 const ALL_SKINS: Skin[] = ["red", "freedom"];
@@ -41,7 +40,7 @@ function transition(update: () => void) {
 
 /** The playable set named in the URL hash; none means the title screen. */
 function setFromHash() {
-  return SETS.find((s) => s.ready && `#${s.id}` === location.hash);
+  return SETS.find((s) => `#${s.id}` === location.hash);
 }
 
 export interface ChineseText {
@@ -56,14 +55,15 @@ export async function loadChinese(): Promise<ChineseText> {
 
 /** `preloaded` is the Chinese text already fetched before the first render, so Chinese readers never see English flash first. */
 export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded: ChineseText | null }) {
+  const initialSet = setFromHash();
   const [lang, setLang] = useState(firstLang);
-  const [set, setSet] = useState(setFromHash);
+  const [set, setSet] = useState(initialSet);
   const [zh, setZh] = useState<ChineseText | null>(preloaded);
   const [original, setOriginal] = useState(false);
   const [sound, setSoundState] = useState(readSoundPreference);
-  const [round, setRound] = useState(() => drawRound(QUESTIONS));
+  const [round, setRound] = useState<RoundItem[]>(() => (initialSet ? drawRound(QUESTIONS_BY_SET[initialSet.id]) : []));
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [picked, setPicked] = useState<ModelKey | null>(null);
+  const [picked, setPicked] = useState<SideKey | null>(null);
   const [unlocked, setUnlocked] = useState(readUnlocked);
   const [skin, setSkin] = useState<Skin>(() => readActive(readUnlocked()));
   const [justUnlocked, setJustUnlocked] = useState<Exclude<Skin, "default"> | null>(null);
@@ -73,8 +73,8 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
 
   const index = picked ? answers.length - 1 : answers.length;
   const current: RoundItem | undefined = round[index];
-  const finished = !current;
-  const summary = useMemo(() => summarize(answers), [answers]);
+  const finished = Boolean(set && !current);
+  const summary = useMemo(() => (set ? summarize(set, answers) : null), [set, answers]);
 
   useEffect(() => {
     document.documentElement.lang = t.htmlLang;
@@ -100,20 +100,29 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
 
   // Finishing a round mostly on one side unlocks that side's theme, and puts it on.
   useEffect(() => {
-    if (!finished) return;
+    if (!finished || !summary) return;
     const earned = skinEarned(summary);
     if (!earned || unlocked.includes(earned)) return;
     setUnlocked([...unlocked, earned]);
     setJustUnlocked(earned);
     transition(() => setSkin(earned));
-  }, [finished]);
+  }, [finished, summary]);
 
   const changeSkin = (next: Skin) => transition(() => setSkin(next));
 
   // The hash is the route, so the back button returns to the title screen and a set can be linked directly.
   useEffect(() => {
     const onHash = () => {
-      transition(() => setSet(setFromHash()));
+      const nextSet = setFromHash();
+      transition(() => {
+        setSet(nextSet);
+        if (nextSet) {
+          setRound(drawRound(QUESTIONS_BY_SET[nextSet.id]));
+          setAnswers([]);
+          setPicked(null);
+          setJustUnlocked(null);
+        }
+      });
       scrollTo({ top: 0 });
     };
     addEventListener("hashchange", onHash);
@@ -126,12 +135,12 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
     location.hash = s.id;
   };
 
-  const pick = (model: ModelKey) => {
+  const pick = (side: SideKey) => {
     if (picked || !current) return;
     playKey();
     startMusic();
-    setAnswers((prev) => [...prev, { question: current.question, model }]);
-    setPicked(model);
+    setAnswers((prev) => [...prev, { question: current.question, side }]);
+    setPicked(side);
   };
 
   // One listener for the page's lifetime, reading the latest state through a ref. Re-registering it
@@ -139,7 +148,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
   const onKey = useRef<(e: KeyboardEvent) => void>(undefined);
   onKey.current = (e) => {
     if (!set) {
-      if (e.key === "Enter" && !(e.target instanceof HTMLElement && e.target.closest("button, a, dialog"))) start(SETS.find((s) => s.ready)!);
+      if (e.key === "Enter" && !(e.target instanceof HTMLElement && e.target.closest("button, a, dialog"))) start(SETS[0]);
       return;
     }
     if (picked || finished || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
@@ -162,8 +171,9 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
   };
 
   const retake = () => {
+    if (!set) return;
     transition(() => {
-      setRound(drawRound(QUESTIONS));
+      setRound(drawRound(QUESTIONS_BY_SET[set.id]));
       setAnswers([]);
       setPicked(null);
       setJustUnlocked(null);
@@ -214,12 +224,13 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
             {finished ? (
               <>
                 {justUnlocked && <UnlockCard skin={justUnlocked} lang={lang} onRevert={() => changeSkin("default")} />}
-                <PersonnelFile summary={summary} setTitle={set.title[lang]} lang={lang} onRetake={retake} />
+                {summary && <PersonnelFile summary={summary} setTitle={set.title[lang]} lang={lang} onRetake={retake} />}
               </>
             ) : (
               <QuestionSheet
                 key={current.question.id}
                 item={current}
+                set={set}
                 index={index}
                 total={round.length}
                 lang={lang}
@@ -235,14 +246,14 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
       </div>
 
       <div class="page">
-        {set && !finished && (
+        {set && !finished && summary && (
           <section class="progress" aria-label={t.tally}>
             <ol class="pips" aria-hidden="true">
               {round.map((_, i) => (
-                <li data-side={answers[i]?.model} data-current={i === index || undefined} />
+                <li data-side={answers[i]?.side} data-current={i === index || undefined} />
               ))}
             </ol>
-            <Split qwen={summary.qwen} inkling={summary.inkling} lang={lang} />
+            <Split first={summary.first} second={summary.second} sides={set.sides} lang={lang} />
           </section>
         )}
       </div>
@@ -250,16 +261,30 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
       <footer class="colophon">
         <p>
           {t.footerNote(
-            <a href={DATASET_URL} target="_blank" rel="noopener">
-              NousResearch/arete-data-pairs
-            </a>
+            set ? (
+              <a href={set.sourceUrl} target="_blank" rel="noopener">
+                {set.sourceName}
+              </a>
+            ) : (
+              <>
+                {SETS.map((s, i) => (
+                  <span key={s.id}>
+                    {i > 0 && (lang === "zh" ? "、" : ", ")}
+                    <a href={s.sourceUrl} target="_blank" rel="noopener">
+                      {s.sourceName}
+                    </a>
+                  </span>
+                ))}
+              </>
+            )
           )}
         </p>
       </footer>
 
-      {picked && current && (
+      {picked && current && set && (
         <NoticeDialog
           key={current.question.id}
+          set={set}
           question={current.question}
           picked={picked}
           meme={current.memes[picked]}
@@ -301,18 +326,6 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
               </>
             )}
           </p>
-          <h3 class="kicker">{t.upcoming}</h3>
-          <ul class="papers">
-            {SETS.filter((s) => !s.ready).map((b) => (
-              <li key={b.id}>
-                <strong>{b.title[lang]}</strong>
-                <span>{b.description[lang]}</span>
-                <a href={b.sourceUrl} target="_blank" rel="noopener">
-                  {b.sourceName} ↗
-                </a>
-              </li>
-            ))}
-          </ul>
           <button class="button">{t.close}</button>
         </form>
       </dialog>
@@ -322,6 +335,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
 
 interface SheetProps {
   item: RoundItem;
+  set: QuestionSet;
   index: number;
   total: number;
   lang: Language;
@@ -329,11 +343,11 @@ interface SheetProps {
   zh: ChineseText | null;
   original: boolean;
   onToggleOriginal?: () => void;
-  picked: ModelKey | null;
-  onPick: (m: ModelKey) => void;
+  picked: SideKey | null;
+  onPick: (m: SideKey) => void;
 }
 
-function QuestionSheet({ item, index, total, lang, zh, original, onToggleOriginal, picked, onPick }: SheetProps) {
+function QuestionSheet({ item, set, index, total, lang, zh, original, onToggleOriginal, picked, onPick }: SheetProps) {
   const t = I18N[lang];
   const q = item.question;
   const tr = zh?.translations[q.id];
@@ -349,8 +363,8 @@ function QuestionSheet({ item, index, total, lang, zh, original, onToggleOrigina
           {tr ? tr.prompt : q.prompt}
         </h2>
         <p class="sheet-meta">
-          <a href={DATASET_URL} target="_blank" rel="noopener">
-            {t.dataset}: arete-data-pairs · {q.id} ↗
+          <a href={set.sourceUrl} target="_blank" rel="noopener">
+            {t.dataset}: {set.shortName} · {q.id} ↗
           </a>
           {tr && zh && <span>{t.translated(zh.translator)}</span>}
           {onToggleOriginal && (
@@ -362,23 +376,24 @@ function QuestionSheet({ item, index, total, lang, zh, original, onToggleOrigina
 
         {/* Warm the cache for whichever clip this answer is about to earn. */}
         <div hidden>
-          {item.order.map((side) => (
-            <video key={side} src={memeVideo(item.memes[side])} preload="auto" muted />
-          ))}
+          {item.order.map((side) => {
+            const m = item.memes[side];
+            return m ? <video key={side} src={memeVideo(m)} preload="auto" muted /> : null;
+          })}
         </div>
 
         <div class="options">
-          {item.order.map((model, slot) => (
+          {item.order.map((side, slot) => (
             <Option
-              key={model}
+              key={side}
               letter={slot === 0 ? "A" : "B"}
-              html={tr ? tr.answers[model] : q.answers[model].html}
+              html={tr ? tr.answers[side] : q.answers[side].html}
               lang={lang}
               textLang={tr ? "zh-CN" : "en"}
-              side={picked === model ? model : undefined}
-              dim={Boolean(picked && picked !== model)}
+              side={picked === side ? side : undefined}
+              dim={Boolean(picked && picked !== side)}
               disabled={Boolean(picked)}
-              onPick={() => onPick(model)}
+              onPick={() => onPick(side)}
             />
           ))}
         </div>
@@ -392,7 +407,7 @@ interface OptionProps {
   html: string;
   lang: Language;
   textLang: string;
-  side?: ModelKey;
+  side?: SideKey;
   dim: boolean;
   disabled: boolean;
   onPick: () => void;

@@ -3,7 +3,7 @@
 - Bun only (1.4.4+): `bun install`, `bun run dev`, `bun check` (types, `bun lint`, tests), `bun fmt`, `bun run build`. No `typescript` or Prettier package; formatting options live in `bunfig.toml`, and `.prettierignore` keeps the dataset JSON untouched.
 - Static site on Cloudflare Pages (`humanrlhf.pages.dev`), built by Pages' GitHub integration on every push to `main` (Pages installs with Bun, then `bun run build`, output `dist/`). Manage the project with the `cf` CLI. Never use or install Wrangler. `static/_headers` sets caching and CSP.
 - Preact + hand-written CSS in `src/styles.css`. No Tailwind, no UI library.
-- Questions and answers are verbatim rows of NousResearch/arete-data-pairs (`scripts/import-arete.ts`, hash-checked). Never rewrite or summarise them; only the A/B order is shuffled. Never label either answer as better or preferred; name the model instead.
+- Questions and answers are verbatim rows of three datasets: NousResearch/arete-data-pairs, Anthropic/hh-rlhf, and PKU-Alignment/BeaverTails (`scripts/import-*.ts`, hash-checked). Never rewrite or summarise them; only the A/B order is shuffled. Never label either answer as better or preferred; where both answers come from one model, state the dataset's own human label, attributed, never its own verdict.
 - Chinese text is machine translation and must say so on the page, with the English original one click away.
 - Post-answer screens state facts (which model, where from). No role-play, no verdicts.
 - The 1984 feel stays in the visual details (dark bars, form strips, stamps, one watching eye in the masthead). No quotes from the book, no fictional ministry.

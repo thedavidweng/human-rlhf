@@ -1,42 +1,88 @@
 // Bundle-time macros: the bundler runs these and inlines their return values, so the page ships
 // ready-made HTML and never parses Markdown in the browser.
 import { renderMarkdown } from "../lib/markdown";
-import en from "./arete.en.json";
-import zh from "./arete.zh.json";
-import type { ModelKey, Question, Translation } from "../types/benchmark";
+import areteEn from "./arete.en.json";
+import areteZh from "./arete.zh.json";
+import btEn from "./beavertails.en.json";
+import btZh from "./beavertails.zh.json";
+import hhEn from "./hh-rlhf.en.json";
+import hhZh from "./hh-rlhf.zh.json";
+import type { AnswerItem, Question, SetId, SideKey, Translation } from "../types/benchmark";
 
-interface RawItem {
+const HH_MODEL = "Anthropic 52B context-distilled language model";
+const BT_MODEL = "Alpaca-7B";
+
+interface RawAnswer {
+  model?: string;
+  text: string;
+  id?: string;
+  categories?: string[];
+}
+
+interface RawQuestion {
   id: string;
   topic: string;
   prompt: string;
-  answers: Record<ModelKey, { model: string; text: string }>;
+  answers: Record<string, RawAnswer>;
+}
+
+function buildAnswer(raw: RawAnswer, defaultModel?: string): AnswerItem {
+  return {
+    model: raw.model ?? defaultModel!,
+    html: renderMarkdown(raw.text),
+    ...(raw.id && { id: raw.id }),
+    ...(raw.categories && { categories: raw.categories })
+  };
+}
+
+function loadSet(rows: readonly RawQuestion[], set: SetId, sides: [SideKey, SideKey], defaultModel?: string): Question[] {
+  const [sideA, sideB] = sides;
+  return rows.map((r) => ({
+    id: r.id,
+    set,
+    topic: r.topic,
+    prompt: r.prompt,
+    sides,
+    answers: {
+      [sideA]: buildAnswer(r.answers[sideA], defaultModel),
+      [sideB]: buildAnswer(r.answers[sideB], defaultModel)
+    },
+    longest: Math.max(r.answers[sideA].text.trim().length, r.answers[sideB].text.trim().length)
+  }));
 }
 
 interface RawTranslation {
   id: string;
   prompt: string;
-  qwen: string;
-  inkling: string;
+  [key: string]: string;
 }
 
-export function loadQuestions(): Question[] {
-  return (en as RawItem[]).map((i) => ({
-    id: i.id,
-    topic: i.topic,
-    prompt: i.prompt,
-    answers: {
-      qwen: { model: i.answers.qwen.model, html: renderMarkdown(i.answers.qwen.text) },
-      inkling: { model: i.answers.inkling.model, html: renderMarkdown(i.answers.inkling.text) }
-    },
-    longest: Math.max(i.answers.qwen.text.trim().length, i.answers.inkling.text.trim().length)
-  }));
+function loadTranslationsForSet(rows: readonly RawTranslation[], sides: [SideKey, SideKey]): [string, Translation][] {
+  const [sideA, sideB] = sides;
+  return rows.map((r) => [
+    r.id,
+    {
+      prompt: r.prompt,
+      answers: {
+        [sideA]: renderMarkdown(r[sideA], { cjk: true }),
+        [sideB]: renderMarkdown(r[sideB], { cjk: true })
+      }
+    }
+  ]);
+}
+
+export function loadAllQuestions(): Record<SetId, Question[]> {
+  return {
+    china: loadSet(areteEn as RawQuestion[], "china", ["qwen", "inkling"]),
+    "hh-rlhf": loadSet(hhEn as RawQuestion[], "hh-rlhf", ["chosen", "rejected"], HH_MODEL),
+    beavertails: loadSet(btEn as RawQuestion[], "beavertails", ["safe", "unsafe"], BT_MODEL)
+  };
 }
 
 export function loadTranslations(): Record<string, Translation> {
-  return Object.fromEntries(
-    (zh as RawTranslation[]).map((r) => [
-      r.id,
-      { prompt: r.prompt, answers: { qwen: renderMarkdown(r.qwen, { cjk: true }), inkling: renderMarkdown(r.inkling, { cjk: true }) } }
-    ])
-  );
+  return Object.fromEntries([
+    ...loadTranslationsForSet(areteZh as RawTranslation[], ["qwen", "inkling"]),
+    ...loadTranslationsForSet(hhZh as RawTranslation[], ["chosen", "rejected"]),
+    ...loadTranslationsForSet(btZh as RawTranslation[], ["safe", "unsafe"])
+  ]);
 }

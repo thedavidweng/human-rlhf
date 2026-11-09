@@ -1,5 +1,6 @@
 import { memePool, type Meme } from "../data/memes";
-import type { Answer, ModelKey, Question } from "../types/benchmark";
+import type { QuestionSet } from "../data/sets";
+import type { Answer, Question, SetId, SideKey } from "../types/benchmark";
 import { archetypeFor, type ArchetypeKey } from "./i18n";
 
 export const ROUND_SIZE = 10;
@@ -10,9 +11,9 @@ export const OPENER_MAX_CHARS = 1700;
 export interface RoundItem {
   question: Question;
   /** order[0] is shown as A, order[1] as B. */
-  order: [ModelKey, ModelKey];
+  order: [SideKey, SideKey];
   /** The clip each answer would earn, dealt without repeats until a side's pool runs out. */
-  memes: Record<ModelKey, Meme>;
+  memes: Partial<Record<SideKey, Meme>>;
 }
 
 function shuffle<T>(items: readonly T[], random: () => number): T[] {
@@ -25,42 +26,61 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
 }
 
 export function drawRound(pool: readonly Question[], random = Math.random): RoundItem[] {
-  const qwen = shuffle(memePool("qwen"), random);
-  const inkling = shuffle(memePool("inkling"), random);
+  const isChina = pool[0]?.set === "china";
+  const qwenMemes = isChina ? shuffle(memePool("qwen"), random) : [];
+  const inklingMemes = isChina ? shuffle(memePool("inkling"), random) : [];
   const shuffled = shuffle(pool, random);
   const opener = shuffled.find((q) => q.longest <= OPENER_MAX_CHARS)!;
-  return [opener, ...shuffled.filter((q) => q !== opener)].slice(0, ROUND_SIZE).map((question, i) => ({
-    question,
-    order: random() < 0.5 ? ["qwen", "inkling"] : ["inkling", "qwen"],
-    memes: { qwen: qwen[i % qwen.length], inkling: inkling[i % inkling.length] }
-  }));
+  return [opener, ...shuffled.filter((q) => q !== opener)].slice(0, ROUND_SIZE).map((question, i) => {
+    const [sideA, sideB] = question.sides;
+    const order: [SideKey, SideKey] = random() < 0.5 ? [sideA, sideB] : [sideB, sideA];
+    return {
+      question,
+      order,
+      memes: isChina ? { qwen: qwenMemes[i % qwenMemes.length], inkling: inklingMemes[i % inklingMemes.length] } : {}
+    };
+  });
 }
 
 export interface Summary {
-  qwen: number;
-  inkling: number;
-  qwenPercent: number;
-  inklingPercent: number;
+  set: SetId;
+  sides: [SideKey, SideKey];
+  first: number;
+  second: number;
+  firstPercent: number;
+  secondPercent: number;
   archetype: ArchetypeKey;
-  byTopic: { topic: string; qwen: number; inkling: number }[];
+  byTopic: { topic: string; first: number; second: number }[];
 }
 
-export function summarize(answers: readonly Answer[]): Summary {
-  const qwen = answers.filter((a) => a.model === "qwen").length;
-  const inkling = answers.length - qwen;
-  const qwenPercent = answers.length ? Math.round((qwen / answers.length) * 100) : 0;
-  const byTopic = new Map<string, Summary["byTopic"][number]>();
-  for (const { question, model } of answers) {
-    const row = byTopic.get(question.topic) ?? { topic: question.topic, qwen: 0, inkling: 0 };
-    row[model] += 1;
+export function summarize(set: Pick<QuestionSet, "id" | "sides">, answers: readonly Answer[]): Summary {
+  const [sideA, sideB] = set.sides;
+  const first = answers.filter((a) => a.side === sideA).length;
+  const second = answers.length - first;
+  const firstPercent = answers.length ? Math.round((first / answers.length) * 100) : 0;
+  const secondPercent = answers.length ? 100 - firstPercent : 0;
+  const byTopic = new Map<string, { topic: string; first: number; second: number }>();
+  for (const { question, side } of answers) {
+    const row = byTopic.get(question.topic) ?? {
+      topic: question.topic,
+      first: 0,
+      second: 0
+    };
+    if (side === sideA) {
+      row.first += 1;
+    } else {
+      row.second += 1;
+    }
     byTopic.set(question.topic, row);
   }
   return {
-    qwen,
-    inkling,
-    qwenPercent,
-    inklingPercent: answers.length ? 100 - qwenPercent : 0,
-    archetype: archetypeFor(qwenPercent),
+    set: set.id,
+    sides: set.sides,
+    first,
+    second,
+    firstPercent,
+    secondPercent,
+    archetype: archetypeFor(firstPercent),
     byTopic: [...byTopic.values()]
   };
 }

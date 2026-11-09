@@ -1,16 +1,18 @@
 import { useState } from "preact/hooks";
 import { I18N } from "../lib/i18n";
 import type { Summary } from "../lib/round";
-import type { Language } from "../types/benchmark";
+import type { Language, SideKey } from "../types/benchmark";
 import { formatDate } from "./notice";
 
 export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: Summary; setTitle: string; lang: Language; onRetake: () => void }) {
   const t = I18N[lang];
   const [copied, setCopied] = useState(false);
-  const leaning = t.archetypes[summary.archetype];
+  const leaning = t.archetypes[summary.set][summary.archetype];
+  const [sideA, sideB] = summary.sides;
 
   const copy = async () => {
-    await navigator.clipboard.writeText(`${t.shareLine(summary.qwenPercent, summary.inklingPercent)}\n${location.origin}${location.pathname}`);
+    const share = t.shareLine(summary.sides, summary.firstPercent, summary.secondPercent);
+    await navigator.clipboard.writeText(`${share}\n${location.origin}${location.pathname}${location.hash}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -19,7 +21,7 @@ export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: 
     <article class="file sheet">
       <header class="band">
         <span class="band-org">{setTitle}</span>
-        <span class="band-ref">{t.answered(summary.qwen + summary.inkling)}</span>
+        <span class="band-ref">{t.answered(summary.first + summary.second)}</span>
       </header>
 
       <div class="sheet-main">
@@ -36,7 +38,7 @@ export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: 
           </div>
         </dl>
 
-        <Split qwen={summary.qwen} inkling={summary.inkling} lang={lang} />
+        <Split first={summary.first} second={summary.second} sides={summary.sides} lang={lang} />
         <p class="file-note">{t.fileNote}</p>
 
         <h3 class="kicker">{t.fileByCategory}</h3>
@@ -44,12 +46,12 @@ export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: 
           {summary.byTopic.map((c) => (
             <li key={c.topic}>
               <span>{t.topics[c.topic]}</span>
-              <span class="blocks" aria-label={`${t.short.qwen} ${c.qwen}, ${t.short.inkling} ${c.inkling}`}>
-                {Array.from({ length: c.qwen }, () => (
-                  <i data-side="qwen" />
+              <span class="blocks" aria-label={`${t.short[sideA]} ${c.first}, ${t.short[sideB]} ${c.second}`}>
+                {Array.from({ length: c.first }, () => (
+                  <i data-side={sideA} />
                 ))}
-                {Array.from({ length: c.inkling }, () => (
-                  <i data-side="inkling" />
+                {Array.from({ length: c.second }, () => (
+                  <i data-side={sideB} />
                 ))}
               </span>
             </li>
@@ -69,20 +71,21 @@ export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: 
   );
 }
 
-export function Split({ qwen, inkling, lang }: { qwen: number; inkling: number; lang: Language }) {
+export function Split({ first, second, sides, lang }: { first: number; second: number; sides: [SideKey, SideKey]; lang: Language }) {
   const t = I18N[lang];
-  const total = qwen + inkling;
+  const [sideA, sideB] = sides;
+  const total = first + second;
   return (
     <div class="split">
       <div class="split-labels">
-        <span data-side="qwen">
-          {t.short.qwen} <b>{qwen}</b>
+        <span data-side={sideA}>
+          {t.short[sideA]} <b>{first}</b>
         </span>
-        <span data-side="inkling">
-          <b>{inkling}</b> {t.short.inkling}
+        <span data-side={sideB}>
+          <b>{second}</b> {t.short[sideB]}
         </span>
       </div>
-      <div class="split-bar" style={{ "--q": total ? qwen / total : 0.5 }} data-empty={total === 0 || undefined} />
+      <div class="split-bar" style={{ "--q": total ? first / total : 0.5 }} data-empty={total === 0 || undefined} />
     </div>
   );
 }

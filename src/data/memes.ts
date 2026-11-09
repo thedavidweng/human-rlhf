@@ -1,4 +1,4 @@
-import type { LocalizedString, ModelKey } from "../types/benchmark";
+import type { LocalizedString, SideKey } from "../types/benchmark";
 
 /**
  * Hand-picked GIPHY clips, each checked frame by frame; alt text describes what is on screen.
@@ -7,7 +7,7 @@ import type { LocalizedString, ModelKey } from "../types/benchmark";
  */
 export interface Meme {
   id: string;
-  side: ModelKey;
+  side: SideKey;
   alt: LocalizedString;
 }
 
@@ -238,6 +238,6 @@ export const memeVideo = (m: Meme) => `https://media.giphy.com/media/${m.id}/gip
 export const memePoster = (m: Meme) => `https://media.giphy.com/media/${m.id}/giphy_s.gif`;
 export const memePage = (m: Meme) => `https://giphy.com/gifs/${m.id}`;
 
-export function memePool(side: ModelKey): Meme[] {
+export function memePool(side: SideKey): Meme[] {
   return MEMES.filter((m) => m.side === side);
 }

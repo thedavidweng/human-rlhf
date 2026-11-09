@@ -1,5 +1,6 @@
-/** Which model wrote an answer. The dataset does not mark either as preferred, and neither does this site. */
-export type ModelKey = "qwen" | "inkling";
+export type SetId = "china" | "hh-rlhf" | "beavertails";
+
+export type SideKey = "qwen" | "inkling" | "chosen" | "rejected" | "safe" | "unsafe";
 
 export type Language = "zh" | "en";
 
@@ -8,12 +9,21 @@ export interface LocalizedString {
   en: string;
 }
 
-/** One row of NousResearch/arete-data-pairs, text verbatim; answers pre-rendered from Markdown at build time. */
+export interface AnswerItem {
+  model: string;
+  html: string;
+  id?: string;
+  categories?: string[];
+}
+
+/** One question row, text verbatim; answers pre-rendered from Markdown at build time. */
 export interface Question {
   id: string;
+  set: SetId;
   topic: string;
   prompt: string;
-  answers: Record<ModelKey, { model: string; html: string }>;
+  sides: [SideKey, SideKey];
+  answers: Record<string, AnswerItem>;
   /** Characters in the longer of the two original answers. */
   longest: number;
 }
@@ -21,10 +31,10 @@ export interface Question {
 /** Machine translation of a question, keyed by question id. */
 export interface Translation {
   prompt: string;
-  answers: Record<ModelKey, string>;
+  answers: Record<string, string>;
 }
 
 export interface Answer {
   question: Question;
-  model: ModelKey;
+  side: SideKey;
 }
