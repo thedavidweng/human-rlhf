@@ -1366,3 +1366,382 @@
     }
   }
 }
+
+@layer components {
+  /* ---- Title screen: a poster for the whole site, built to be screenshotted and shared. ---- */
+  /* The poster fills the first screen exactly and runs straight into the footer. */
+  .screen:has(> .title) {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    + .page {
+      display: none;
+    }
+    ~ .colophon {
+      margin-top: 0;
+    }
+  }
+
+  .title {
+    flex: 1;
+    display: grid;
+    grid-template-areas: "copy" "slips" "sets";
+    align-content: center;
+    gap: clamp(20px, 3.6vh, 36px) clamp(32px, 5vw, 72px);
+    padding: clamp(24px, 5vh, 56px) max(16px, calc(50% - 524px)) clamp(24px, 4vh, 40px);
+    /* Ruled like ledger paper. */
+    background:
+      linear-gradient(color-mix(in oklab, var(--on-bar) 6%, transparent) 1px, transparent 1px) 0 0 / 100% 32px,
+      var(--bar);
+    color: var(--on-bar);
+    @media (width >= 900px) {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-template-areas: "copy slips" "sets sets";
+      align-items: center;
+    }
+    .kicker {
+      color: color-mix(in oklab, var(--on-bar) 62%, transparent);
+    }
+  }
+
+  .title-copy {
+    grid-area: copy;
+  }
+
+  .wordmark {
+    margin: 14px 0 0 -0.04em;
+    font-family: "Archivo Condensed", var(--font);
+    font-weight: 900;
+    font-stretch: 62%;
+    font-size: clamp(96px, min(13vw, 16vh), 188px);
+    line-height: 0.8;
+    letter-spacing: -0.005em;
+    text-transform: uppercase;
+    span {
+      display: block;
+    }
+    span + span {
+      color: var(--title-accent);
+    }
+  }
+
+  .title-gloss {
+    margin-top: 14px;
+    font: 600 12px var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+
+  .title-lede {
+    margin-top: clamp(18px, 3vh, 28px);
+    font-size: clamp(24px, 2.6vw, 32px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .title-body {
+    max-width: 46ch;
+    margin-top: 10px;
+    color: color-mix(in oklab, var(--on-bar) 72%, transparent);
+    text-wrap: pretty;
+  }
+
+  .title-start {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    margin-top: clamp(20px, 3.4vh, 32px);
+    .hint {
+      color: color-mix(in oklab, var(--on-bar) 55%, transparent);
+    }
+  }
+
+  .insert {
+    flex-basis: 100%;
+    color: var(--title-accent);
+    font: 700 13px var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .button.start {
+    padding: 14px 26px;
+    border-color: var(--on-bar);
+    background: var(--on-bar);
+    color: #141414;
+    font-size: 18px;
+    box-shadow: 0 3px 0 var(--title-accent);
+    &:hover {
+      background: #fff;
+    }
+  }
+
+  /* Two answer slips with the model names blacked out: the whole idea in one picture. */
+  .slips {
+    grid-area: slips;
+    position: relative;
+    height: clamp(260px, 50vh, 460px);
+  }
+
+  /* The poster is dark and the slips are paper in either OS theme; the hidden themes bring their own colours. */
+  :root:not([data-skin]) {
+    .title {
+      --title-accent: #f0604f;
+    }
+    .slips {
+      --paper: #f2efe8;
+      --surface: #ffffff;
+      --ink: #161616;
+      --line: #e3dfd6;
+      --line-strong: #b9b4a8;
+      --red: #b42318;
+    }
+  }
+
+  .slip {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width: min(70%, 400px);
+    height: 80%;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 28px 48px -20px rgb(0 0 0 / 0.7);
+    overflow: hidden;
+    &[data-slip="A"] {
+      top: 0;
+      left: 2%;
+      rotate: -4deg;
+    }
+    &[data-slip="B"] {
+      right: 2%;
+      bottom: 0;
+      rotate: 3deg;
+    }
+    .band {
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+  }
+
+  .slip-model {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    .redact {
+      width: 7ch;
+      height: 11px;
+      background: var(--on-bar);
+    }
+  }
+
+  .slip-body {
+    flex: 1;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 18px 16px;
+  }
+
+  .line,
+  .redact {
+    display: block;
+    height: 9px;
+    border-radius: 1px;
+  }
+
+  .line {
+    background: var(--line);
+  }
+
+  .redact {
+    background: var(--ink);
+  }
+
+  .slip-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px 16px;
+  }
+
+  .slip-pick {
+    flex: 1;
+    padding: 9px 14px;
+    border-radius: 2px;
+    background: var(--bar);
+    color: var(--on-bar);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 0 var(--red);
+  }
+
+  .title-seal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: clamp(84px, 9vw, 112px);
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    outline: 1px solid var(--ink);
+    outline-offset: 4px;
+    background: var(--paper);
+    box-shadow: 0 0 0 8px var(--paper);
+    .eye {
+      width: 62%;
+      height: 62%;
+      --eye-white: var(--paper);
+    }
+  }
+
+  .title-stamp {
+    position: absolute;
+    right: 5%;
+    bottom: 27%;
+    z-index: 2;
+    rotate: -10deg;
+    scale: 1.12;
+  }
+
+  .sets {
+    grid-area: sets;
+    h2 {
+      margin-bottom: 10px;
+    }
+    ol {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      @media (width >= 720px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  }
+
+  .set {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: start;
+    gap: 2px 14px;
+    width: 100%;
+    height: 100%;
+    padding: 14px 16px;
+    border: 1px solid color-mix(in oklab, var(--on-bar) 20%, transparent);
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--on-bar) 4%, transparent);
+    color: var(--on-bar);
+    font-size: 14px;
+    text-align: left;
+    > :not(.set-no) {
+      grid-column: 2;
+    }
+    strong {
+      font-size: 16px;
+    }
+    &:is(button) {
+      border-color: var(--title-accent);
+      box-shadow: inset 4px 0 0 var(--title-accent);
+      &:hover {
+        background: color-mix(in oklab, var(--on-bar) 10%, transparent);
+      }
+    }
+    &[aria-disabled] {
+      border-style: dashed;
+      color: color-mix(in oklab, var(--on-bar) 60%, transparent);
+    }
+  }
+
+  .set-no {
+    grid-row: span 3;
+    font: 900 36px/0.9 "Archivo Condensed", var(--mono);
+    font-stretch: 62%;
+    color: var(--title-accent);
+    [aria-disabled] > & {
+      color: inherit;
+    }
+  }
+
+  .set-desc {
+    color: color-mix(in oklab, var(--on-bar) 66%, transparent);
+    font-size: 13px;
+    text-wrap: pretty;
+    /* On short laptop screens the sets row stays above the fold without it. */
+    @media (width >= 720px) and (height < 800px) {
+      display: none;
+    }
+  }
+
+  .set-meta {
+    margin-top: 6px;
+    font: 600 11px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .set-prep {
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+  }
+}
+
+@layer skins {
+  :root[data-skin] .title {
+    --title-accent: var(--accent);
+    .wordmark {
+      text-shadow: 6px 6px 0 var(--shadow-ink);
+    }
+  }
+  /* The ray burst behind the whole page shows through the poster. */
+  :root[data-skin="red"] .title {
+    background: none;
+  }
+  /* The starred canton, wall to wall. */
+  :root[data-skin="freedom"] .title {
+    background:
+      radial-gradient(rgb(255 255 255 / 0.22) 1.6px, transparent 2.2px) 0 0 / 36px 36px,
+      radial-gradient(rgb(255 255 255 / 0.22) 1.6px, transparent 2.2px) 18px 18px / 36px 36px,
+      var(--bar);
+  }
+}
+
+@layer motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .caret {
+      animation: insert-blink 1.1s steps(1) infinite;
+    }
+    .slip {
+      transition: rotate 300ms var(--ease-out), translate 300ms var(--ease-out);
+    }
+    .slips:hover .slip {
+      &[data-slip="A"] {
+        rotate: -7deg;
+        translate: -10px -4px;
+      }
+      &[data-slip="B"] {
+        rotate: 6deg;
+        translate: 10px 4px;
+      }
+    }
+  }
+
+  @keyframes insert-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}

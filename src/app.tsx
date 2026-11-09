@@ -3,13 +3,14 @@ import { Eye } from "./components/eye";
 import { PersonnelFile, Split } from "./components/file";
 import { NoticeDialog } from "./components/notice";
 import { SkinBanner, UnlockCard } from "./components/skin";
+import { TitleScreen } from "./components/title";
 import { memeVideo } from "./data/memes";
 import { QUESTIONS } from "./data/questions";
 import { DATASET_URL } from "./data/source";
-import { UPCOMING } from "./data/upcoming";
+import { SETS, type QuestionSet } from "./data/sets";
 import { I18N } from "./lib/i18n";
 import { drawRound, summarize, type RoundItem } from "./lib/round";
-import { loadSkinFont, readActive, readUnlocked, save, skinEarned, type Skin } from "./lib/skins";
+import { loadDisplayFont, readActive, readUnlocked, save, skinEarned, type Skin } from "./lib/skins";
 import { playChime, playKey, readSoundPreference, setSound } from "./lib/sound";
 import type { Answer, Language, ModelKey, Translation } from "./types/benchmark";
 
@@ -37,6 +38,11 @@ function transition(update: () => void) {
   });
 }
 
+/** The playable set named in the URL hash; none means the title screen. */
+function setFromHash() {
+  return SETS.find((s) => s.ready && `#${s.id}` === location.hash);
+}
+
 export interface ChineseText {
   translations: Record<string, Translation>;
   translator: string;
@@ -50,6 +56,7 @@ export async function loadChinese(): Promise<ChineseText> {
 /** `preloaded` is the Chinese text already fetched before the first render, so Chinese readers never see English flash first. */
 export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded: ChineseText | null }) {
   const [lang, setLang] = useState(firstLang);
+  const [set, setSet] = useState(setFromHash);
   const [zh, setZh] = useState<ChineseText | null>(preloaded);
   const [original, setOriginal] = useState(false);
   const [sound, setSoundState] = useState(readSoundPreference);
@@ -83,7 +90,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
     if (skin === "default") delete document.documentElement.dataset.skin;
     else {
       document.documentElement.dataset.skin = skin;
-      loadSkinFont();
+      loadDisplayFont();
     }
     save(unlocked, skin);
   }, [skin, unlocked]);
@@ -100,6 +107,21 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
 
   const changeSkin = (next: Skin) => transition(() => setSkin(next));
 
+  // The hash is the route, so the back button returns to the title screen and a set can be linked directly.
+  useEffect(() => {
+    const onHash = () => {
+      transition(() => setSet(setFromHash()));
+      scrollTo({ top: 0 });
+    };
+    addEventListener("hashchange", onHash);
+    return () => removeEventListener("hashchange", onHash);
+  }, []);
+
+  const start = (s: QuestionSet) => {
+    playKey();
+    location.hash = s.id;
+  };
+
   const pick = (model: ModelKey) => {
     if (picked || !current) return;
     playKey();
@@ -111,6 +133,10 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
   // after each render would leave a gap while a view transition holds the next frame.
   const onKey = useRef<(e: KeyboardEvent) => void>(undefined);
   onKey.current = (e) => {
+    if (!set) {
+      if (e.key === "Enter" && !(e.target instanceof HTMLElement && e.target.closest("button, a, dialog"))) start(SETS.find((s) => s.ready)!);
+      return;
+    }
     if (picked || finished || e.metaKey || e.ctrlKey || e.altKey || document.querySelector("dialog[open]")) return;
     if (e.target instanceof HTMLElement && e.target.closest("input, textarea, [contenteditable]")) return;
     const slot = ({ a: 0, "1": 0, arrowleft: 0, b: 1, "2": 1, arrowright: 1 } as const)[e.key.toLowerCase()];
@@ -148,7 +174,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
   return (
     <>
       {/* The masthead and the current question share exactly one screen, so a screenshot catches all of it. */}
-      <div class="screen" data-fit={!finished || undefined}>
+      <div class="screen" data-fit={(set && !finished) || undefined}>
       <header class="masthead">
         <a class="brand" href="./" aria-label={t.brand}>
           <Eye />
@@ -170,6 +196,9 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
         </nav>
       </header>
 
+      {!set ? (
+        <TitleScreen lang={lang} onStart={start} />
+      ) : (
       <main class="page">
         {answers.length === 0 && (
           <section class="hero">
@@ -209,10 +238,11 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
         )}
 
       </main>
+      )}
       </div>
 
       <div class="page">
-        {!finished && (
+        {set && !finished && (
           <section class="progress" aria-label={t.tally}>
             <ol class="pips" aria-hidden="true">
               {round.map((_, i) => (
@@ -257,7 +287,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
           </div>
           <h3 class="kicker">{t.upcoming}</h3>
           <ul class="papers">
-            {UPCOMING.map((b) => (
+            {SETS.filter((s) => !s.ready).map((b) => (
               <li key={b.id}>
                 <strong>{b.title[lang]}</strong>
                 <span>{b.description[lang]}</span>

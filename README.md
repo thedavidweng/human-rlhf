@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="static/og.png" alt="Human RLHF: a question about the 1997 Hong Kong handover with two model answers, A and B, side by side." width="760">
+<img src="static/og.png" alt="Human RLHF title screen: the words Human RLHF, “Two answers. No names. Pick one.”, two answer slips with the model names blacked out under a Blind stamp, and the question sets." width="760">
 
 # Human RLHF
 
-**Two answers. Which one do you agree with?**
+**Two answers. No names. Pick one.**
 
 English | [简体中文](README.zh-CN.md)
 
@@ -32,6 +32,7 @@ Every question comes from Nous Research's [arete-data-pairs](https://huggingface
 
 - **10 questions a round**, drawn from 25 about free speech, surveillance, governance, state ideology and markets. A and B are shuffled every time.
 - **Nothing is rewritten.** Questions and answers are the dataset's own text, checked byte for byte against its SHA-256 hashes. The dataset doesn't say which answer is better, and neither does the site.
+- **A title screen worth sharing.** The site opens on a poster with the question sets: the China set is playable, more sets are in preparation. Each set has its own link, such as `#china`.
 - **Built to be screenshotted.** The question, both answers and the buttons share one screen on a laptop or a phone.
 - **A GIF after every pick.** Choose Qwen3.8-27B's answer and your social credit goes up; choose Inkling's and you get managed democracy. Both sides get roasted, and politicians from both get a cameo.
 - **Chinese or English.** The Chinese interface shows a machine translation, clearly labelled, with the English original one click away.

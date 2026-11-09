@@ -11,7 +11,7 @@ export function PersonnelFile({ summary, lang, onRetake }: { summary: Summary; l
   const leaning = t.archetypes[summary.archetype];
 
   const copy = async () => {
-    await navigator.clipboard.writeText(`${t.shareLine(leaning, summary.qwenPercent, summary.inklingPercent)}\n${location.href}`);
+    await navigator.clipboard.writeText(`${t.shareLine(leaning, summary.qwenPercent, summary.inklingPercent)}\n${location.origin}${location.pathname}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
