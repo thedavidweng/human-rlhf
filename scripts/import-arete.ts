@@ -4,11 +4,31 @@
 import { Glob } from "bun";
 
 const PICKED = [
-  "foe-003109", "foe-006586", "foe-006598", "foe-005533", "foe-005504", "foe-003883", "foe-000358", "foe-005237",
-  "dps-001695", "dps-004736", "dps-003195", "dps-003793", "dps-001822", "dps-000296",
-  "demgov-009673", "demgov-007812", "demgov-005935", "demgov-009798",
-  "stideo-004612", "stideo-002122", "stideo-004792", "stideo-002212", "stideo-002920",
-  "smc-002626", "smc-002735"
+  "foe-003109",
+  "foe-006586",
+  "foe-006598",
+  "foe-005533",
+  "foe-005504",
+  "foe-003883",
+  "foe-000358",
+  "foe-005237",
+  "dps-001695",
+  "dps-004736",
+  "dps-003195",
+  "dps-003793",
+  "dps-001822",
+  "dps-000296",
+  "demgov-009673",
+  "demgov-007812",
+  "demgov-005935",
+  "demgov-009798",
+  "stideo-004612",
+  "stideo-002122",
+  "stideo-004792",
+  "stideo-002212",
+  "stideo-002920",
+  "smc-002626",
+  "smc-002735"
 ];
 
 interface Row {

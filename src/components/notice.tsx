@@ -52,16 +52,7 @@ export function NoticeDialog({ question, picked, meme, lang, last, onDone }: Pro
           </div>
 
           <figure class="meme">
-            <video
-              src={memeVideo(meme)}
-              poster={memePoster(meme)}
-              aria-label={meme.alt[lang]}
-              autoplay={!still}
-              controls={still}
-              muted
-              loop
-              playsinline
-            />
+            <video src={memeVideo(meme)} poster={memePoster(meme)} aria-label={meme.alt[lang]} autoplay={!still} controls={still} muted loop playsinline />
             <figcaption>
               <a href={memePage(meme)} target="_blank" rel="noopener">
                 via GIPHY

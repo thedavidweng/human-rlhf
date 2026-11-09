@@ -29,13 +29,11 @@ export function drawRound(pool: readonly Question[], random = Math.random): Roun
   const inkling = shuffle(memePool("inkling"), random);
   const shuffled = shuffle(pool, random);
   const opener = shuffled.find((q) => q.longest <= OPENER_MAX_CHARS)!;
-  return [opener, ...shuffled.filter((q) => q !== opener)]
-    .slice(0, ROUND_SIZE)
-    .map((question, i) => ({
-      question,
-      order: random() < 0.5 ? ["qwen", "inkling"] : ["inkling", "qwen"],
-      memes: { qwen: qwen[i % qwen.length], inkling: inkling[i % inkling.length] }
-    }));
+  return [opener, ...shuffled.filter((q) => q !== opener)].slice(0, ROUND_SIZE).map((question, i) => ({
+    question,
+    order: random() < 0.5 ? ["qwen", "inkling"] : ["inkling", "qwen"],
+    memes: { qwen: qwen[i % qwen.length], inkling: inkling[i % inkling.length] }
+  }));
 }
 
 export interface Summary {

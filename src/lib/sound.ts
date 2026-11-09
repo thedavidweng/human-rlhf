@@ -1,4 +1,6 @@
 // Three physical sounds, synthesised on demand: a typewriter key, a rubber stamp, a station chime.
+// Plus one background track, which follows the same switch.
+import { MUSIC } from "../data/music";
 
 const STORAGE_KEY = "human-rlhf:sound";
 
@@ -22,7 +24,26 @@ export function setSound(on: boolean) {
   } catch {
     // Private mode: the preference just won't persist.
   }
+  syncMusic();
 }
+
+let music: HTMLAudioElement | undefined;
+let musicWanted = false;
+
+/** Call from a click or key press: browsers only let audio start after one. */
+export function startMusic() {
+  musicWanted = true;
+  syncMusic();
+}
+
+function syncMusic() {
+  if (!musicWanted || !enabled || document.hidden) return music?.pause();
+  music ??= Object.assign(new Audio(MUSIC.file), { loop: true, volume: 0.3, preload: "none" });
+  void music.play();
+}
+
+// A hidden tab goes quiet and picks up where it left off when it comes back.
+document.addEventListener("visibilitychange", syncMusic);
 
 function audio(): AudioContext | undefined {
   if (!enabled) return;

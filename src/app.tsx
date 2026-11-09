@@ -6,12 +6,13 @@ import { SkinBanner, UnlockCard } from "./components/skin";
 import { TitleScreen } from "./components/title";
 import { memeVideo } from "./data/memes";
 import { QUESTIONS } from "./data/questions";
+import { MUSIC } from "./data/music";
 import { DATASET_URL } from "./data/source";
 import { SETS, type QuestionSet } from "./data/sets";
 import { I18N } from "./lib/i18n";
 import { drawRound, summarize, type RoundItem } from "./lib/round";
 import { loadDisplayFont, readActive, readUnlocked, save, skinEarned, type Skin } from "./lib/skins";
-import { playChime, playKey, readSoundPreference, setSound } from "./lib/sound";
+import { playChime, playKey, readSoundPreference, setSound, startMusic } from "./lib/sound";
 import type { Answer, Language, ModelKey, Translation } from "./types/benchmark";
 
 const LANG_KEY = "human-rlhf:lang";
@@ -119,12 +120,14 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
 
   const start = (s: QuestionSet) => {
     playKey();
+    startMusic();
     location.hash = s.id;
   };
 
   const pick = (model: ModelKey) => {
     if (picked || !current) return;
     playKey();
+    startMusic();
     setAnswers((prev) => [...prev, { question: current.question, model }]);
     setPicked(model);
   };
@@ -175,70 +178,67 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
     <>
       {/* The masthead and the current question share exactly one screen, so a screenshot catches all of it. */}
       <div class="screen" data-fit={(set && !finished) || undefined}>
-      <header class="masthead">
-        <a class="brand" href="./" aria-label={t.brand}>
-          <Eye />
-          <span class="brand-name">{t.brand}</span>
-        </a>
-        <nav class="tools">
-          <button class="link" onClick={() => about.current?.showModal()}>
-            {t.about}
-          </button>
-          {unlocked.length > 0 && (
-            <Swatches skins={["default", ...unlocked]} active={skin} lang={lang} onPick={changeSkin} />
-          )}
-          <button class="link icon" aria-label={t.sound(sound)} title={t.sound(sound)} onClick={toggleSound}>
-            <SpeakerIcon on={sound} />
-          </button>
-          <button class="link" lang={lang === "zh" ? "en" : "zh"} aria-label={t.switchLanguageLabel} onClick={() => setLang(lang === "zh" ? "en" : "zh")}>
-            {t.switchLanguage}
-          </button>
-        </nav>
-      </header>
+        <header class="masthead">
+          <a class="brand" href="./" aria-label={t.brand}>
+            <Eye />
+            <span class="brand-name">{t.brand}</span>
+          </a>
+          <nav class="tools">
+            <button class="link" onClick={() => about.current?.showModal()}>
+              {t.about}
+            </button>
+            {unlocked.length > 0 && <Swatches skins={["default", ...unlocked]} active={skin} lang={lang} onPick={changeSkin} />}
+            <button class="link icon" aria-label={t.sound(sound)} title={t.sound(sound)} onClick={toggleSound}>
+              <SpeakerIcon on={sound} />
+            </button>
+            <button class="link" lang={lang === "zh" ? "en" : "zh"} aria-label={t.switchLanguageLabel} onClick={() => setLang(lang === "zh" ? "en" : "zh")}>
+              {t.switchLanguage}
+            </button>
+          </nav>
+        </header>
 
-      {!set ? (
-        <TitleScreen lang={lang} onStart={start} />
-      ) : (
-      <main class="page">
-        {answers.length === 0 && (
-          <section class="hero">
-            <div class="hero-copy">
-              <p class="kicker">{t.heroKicker}</p>
-              <h1>{t.heroTitle}</h1>
-              <p class="hero-body">{t.heroBody}</p>
-            </div>
-            {skin === "default" ? (
-              <div class="seal" aria-hidden="true">
-                <Eye size={72} />
-              </div>
-            ) : (
-              <SkinBanner skin={skin} lang={lang} />
-            )}
-          </section>
-        )}
-
-        {finished ? (
-          <>
-            {justUnlocked && <UnlockCard skin={justUnlocked} lang={lang} onRevert={() => changeSkin("default")} />}
-            <PersonnelFile summary={summary} lang={lang} onRetake={retake} />
-          </>
+        {!set ? (
+          <TitleScreen lang={lang} onStart={start} />
         ) : (
-          <QuestionSheet
-            key={current.question.id}
-            item={current}
-            index={index}
-            total={round.length}
-            lang={lang}
-            zh={lang === "zh" && !original ? zh : null}
-            onToggleOriginal={lang === "zh" ? () => setOriginal(!original) : undefined}
-            original={original}
-            picked={picked}
-            onPick={pick}
-          />
-        )}
+          <main class="page">
+            {answers.length === 0 && (
+              <section class="hero">
+                <div class="hero-copy">
+                  <p class="kicker">{t.heroKicker}</p>
+                  <h1>{t.heroTitle}</h1>
+                  <p class="hero-body">{t.heroBody}</p>
+                </div>
+                {skin === "default" ? (
+                  <div class="seal" aria-hidden="true">
+                    <Eye size={72} />
+                  </div>
+                ) : (
+                  <SkinBanner skin={skin} lang={lang} />
+                )}
+              </section>
+            )}
 
-      </main>
-      )}
+            {finished ? (
+              <>
+                {justUnlocked && <UnlockCard skin={justUnlocked} lang={lang} onRevert={() => changeSkin("default")} />}
+                <PersonnelFile summary={summary} lang={lang} onRetake={retake} />
+              </>
+            ) : (
+              <QuestionSheet
+                key={current.question.id}
+                item={current}
+                index={index}
+                total={round.length}
+                lang={lang}
+                zh={lang === "zh" && !original ? zh : null}
+                onToggleOriginal={lang === "zh" ? () => setOriginal(!original) : undefined}
+                original={original}
+                picked={picked}
+                onPick={pick}
+              />
+            )}
+          </main>
+        )}
       </div>
 
       <div class="page">
@@ -265,7 +265,15 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
       </footer>
 
       {picked && current && (
-        <NoticeDialog key={current.question.id} question={current.question} picked={picked} meme={current.memes[picked]} lang={lang} last={index === round.length - 1} onDone={next} />
+        <NoticeDialog
+          key={current.question.id}
+          question={current.question}
+          picked={picked}
+          meme={current.memes[picked]}
+          lang={lang}
+          last={index === round.length - 1}
+          onDone={next}
+        />
       )}
 
       <dialog ref={about} class="about" closedby="any" aria-labelledby="about-title">
@@ -285,6 +293,17 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
               <Swatches skins={["default", ...ALL_SKINS]} active={skin} lang={lang} onPick={changeSkin} labelled />
             )}
           </div>
+          <h3 class="kicker">{t.musicTitle}</h3>
+          <p>
+            <a href={MUSIC.page} target="_blank" rel="noopener">
+              {MUSIC.artist} – “{MUSIC.title}” ↗
+            </a>
+            {t.musicCredit(MUSIC.release, MUSIC.label, MUSIC.year)}
+            <a href={MUSIC.licenseUrl} target="_blank" rel="noopener">
+              {MUSIC.license}
+            </a>
+            {t.musicNote}
+          </p>
           <h3 class="kicker">{t.upcoming}</h3>
           <ul class="papers">
             {SETS.filter((s) => !s.ready).map((b) => (
@@ -435,12 +454,32 @@ function Option({ letter, html, lang, textLang, side, dim, disabled, onPick }: O
 }
 
 /** Small round colour chips, one per theme: a theme switch that looks like the themes it switches to. */
-function Swatches({ skins, active, lang, onPick, labelled = false }: { skins: Skin[]; active: Skin; lang: Language; onPick: (s: Skin) => void; labelled?: boolean }) {
+function Swatches({
+  skins,
+  active,
+  lang,
+  onPick,
+  labelled = false
+}: {
+  skins: Skin[];
+  active: Skin;
+  lang: Language;
+  onPick: (s: Skin) => void;
+  labelled?: boolean;
+}) {
   const t = I18N[lang];
   return (
     <div class="swatches" role="group" aria-label={t.skin} data-labelled={labelled || undefined}>
       {skins.map((s) => (
-        <button type="button" key={s} class="swatch-button" aria-pressed={active === s} title={t.skins[s]} aria-label={labelled ? undefined : t.skins[s]} onClick={() => onPick(s)}>
+        <button
+          type="button"
+          key={s}
+          class="swatch-button"
+          aria-pressed={active === s}
+          title={t.skins[s]}
+          aria-label={labelled ? undefined : t.skins[s]}
+          onClick={() => onPick(s)}
+        >
           <span class="swatch" data-swatch={s} aria-hidden="true" />
           {labelled && <span>{t.skins[s]}</span>}
         </button>
@@ -452,7 +491,17 @@ function Swatches({ skins, active, lang, onPick, labelled = false }: { skins: Sk
 /** Speaker glyph after Lucide's volume-2 / volume-x (ISC). */
 function SpeakerIcon({ on }: { on: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
       <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
       {on ? (
         <>

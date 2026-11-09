@@ -9,8 +9,24 @@ import { Eye } from "./eye";
 
 /** Placeholder text lines on the two answer slips: [width, redacted]. */
 const SLIP_LINES: Record<"A" | "B", [string, boolean][]> = {
-  A: [["100%", false], ["34%", true], ["92%", false], ["100%", false], ["58%", true], ["86%", false], ["44%", false]],
-  B: [["96%", false], ["100%", false], ["62%", true], ["90%", false], ["28%", true], ["100%", false], ["70%", false]]
+  A: [
+    ["100%", false],
+    ["34%", true],
+    ["92%", false],
+    ["100%", false],
+    ["58%", true],
+    ["86%", false],
+    ["44%", false]
+  ],
+  B: [
+    ["96%", false],
+    ["100%", false],
+    ["62%", true],
+    ["90%", false],
+    ["28%", true],
+    ["100%", false],
+    ["70%", false]
+  ]
 };
 
 /** The first screen: a poster for the whole site, then the question sets to pick from. */

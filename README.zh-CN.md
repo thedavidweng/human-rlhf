@@ -55,12 +55,13 @@ RLHF 指的是用人类在两个回答之间的选择来训练模型。这个网
 
 ## 数据
 
-| | |
-|---|---|
-| 题目和回答 | `src/data/arete.en.json`，由 `scripts/import-arete.ts` 从数据集的 `paired/*.jsonl` 复制，导入时逐条核对 SHA-256，测试会再核一遍。 |
-| 中文 | `src/data/arete.zh.json`，由 Gemini 3.8 Flash 机器翻译。测试检查每条回答都有译文，Markdown 结构和原文一致。 |
-| 渲染 | 回答是 Markdown，构建时由 Bun 宏（`src/data/load.ts`）渲染成 HTML，转义原始 HTML，只保留 http(s) 链接。 |
-| 梗图 | `src/data/memes.ts`，按模型分池，每轮发牌不重复。每张都逐帧看过，说明文字按画面实际内容写。视频从 GIPHY 的 CDN 加载，并注明出处。 |
+|            |                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 题目和回答 | `src/data/arete.en.json`，由 `scripts/import-arete.ts` 从数据集的 `paired/*.jsonl` 复制，导入时逐条核对 SHA-256，测试会再核一遍。                                                                       |
+| 中文       | `src/data/arete.zh.json`，由 Gemini 3.8 Flash 机器翻译。测试检查每条回答都有译文，Markdown 结构和原文一致。                                                                                             |
+| 渲染       | 回答是 Markdown，构建时由 Bun 宏（`src/data/load.ts`）渲染成 HTML，转义原始 HTML，只保留 http(s) 链接。                                                                                                 |
+| 音乐       | `src/data/music.ts`：Figure 的《Access Denied!!!》，出自 Heavy Industries 厂牌 2004 年的《Maintenance EP》，CC BY-NC-ND 1.0。原样从 Internet Archive 串流播放，署名在“这是什么”里，仓库里不存音频文件。 |
+| 梗图       | `src/data/memes.ts`，按模型分池，每轮发牌不重复。每张都逐帧看过，说明文字按画面实际内容写。视频从 GIPHY 的 CDN 加载，并注明出处。                                                                       |
 
 重新导入：先把数据集 `paired/` 下需要的 jsonl 下载到一个目录，然后运行：
 
@@ -70,18 +71,20 @@ bun scripts/import-arete.ts <目录>
 
 ## 开发
 
-需要 [Bun](https://bun.sh) 1.4 以上。
+需要 [Bun](https://bun.sh) 1.4.4 以上。类型检查、格式化和测试都用 Bun 内置的工具，不装 `typescript` 和 Prettier。
 
 ```sh
 bun install
 bun run dev      # 本地开发，带热更新
-bun run check    # 类型检查（TypeScript 7）+ 测试
+bun check        # 类型检查（bun check）+ 格式检查 + 测试
+bun lint         # 只做格式检查（bun fmt --check）
+bun fmt          # 格式化全部文件，配置在 bunfig.toml
 bun run build    # 输出到 dist/
 ```
 
 ## 部署
 
-纯静态文件，托管在 Cloudflare Pages：[humanrlhf.pages.dev](https://humanrlhf.pages.dev)。Pages 已关联这个 GitHub 仓库，每次推送到 `main`，Cloudflare 会运行 `bun install --frozen-lockfile && bun run build`，然后发布 `dist/`。`main` 以外的分支不生成预览部署。
+纯静态文件，托管在 Cloudflare Pages：[humanrlhf.pages.dev](https://humanrlhf.pages.dev)。Pages 已关联这个 GitHub 仓库，每次推送到 `main`，Cloudflare 用 Bun 安装依赖、运行 `bun run build`，然后发布 `dist/`。`main` 以外的分支不生成预览部署。
 
 项目是用 Cloudflare 的 `cf` CLI 创建的，也可以用它手动重新部署当前的 `main`：
 

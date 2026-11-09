@@ -1,6 +1,5 @@
 @layer base, components, skins, motion;
 
-
 @property --q {
   syntax: "<number>";
   inherits: false;
@@ -1666,7 +1665,9 @@
 
   .set-no {
     grid-row: span 3;
-    font: 900 36px/0.9 "Archivo Condensed", var(--mono);
+    font:
+      900 36px/0.9 "Archivo Condensed",
+      var(--mono);
     font-stretch: 62%;
     color: var(--title-accent);
     [aria-disabled] > & {
@@ -1725,7 +1726,9 @@
       animation: insert-blink 1.1s steps(1) infinite;
     }
     .slip {
-      transition: rotate 300ms var(--ease-out), translate 300ms var(--ease-out);
+      transition:
+        rotate 300ms var(--ease-out),
+        translate 300ms var(--ease-out);
     }
     .slips:hover .slip {
       &[data-slip="A"] {

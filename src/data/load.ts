@@ -34,6 +34,9 @@ export function loadQuestions(): Question[] {
 
 export function loadTranslations(): Record<string, Translation> {
   return Object.fromEntries(
-    (zh as RawTranslation[]).map((r) => [r.id, { prompt: r.prompt, answers: { qwen: renderMarkdown(r.qwen, { cjk: true }), inkling: renderMarkdown(r.inkling, { cjk: true }) } }])
+    (zh as RawTranslation[]).map((r) => [
+      r.id,
+      { prompt: r.prompt, answers: { qwen: renderMarkdown(r.qwen, { cjk: true }), inkling: renderMarkdown(r.inkling, { cjk: true }) } }
+    ])
   );
 }

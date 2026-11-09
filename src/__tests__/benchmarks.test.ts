@@ -44,7 +44,7 @@ describe("dataset", () => {
 
 describe("markdown", () => {
   it("escapes raw HTML and drops non-http links", () => {
-    const html = renderMarkdown('**ok** <script>x()</script> <img src=x onerror=y()>\n\n[a](javascript:alert(1)) [b](https://example.org)');
+    const html = renderMarkdown("**ok** <script>x()</script> <img src=x onerror=y()>\n\n[a](javascript:alert(1)) [b](https://example.org)");
     expect(html).toContain("<strong>ok</strong>");
     expect(html).not.toContain("<script");
     expect(html).not.toContain("<img");

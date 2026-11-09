@@ -55,12 +55,13 @@ Finish a round mostly on one side and that side's theme unlocks. Unlocked themes
 
 ## Data
 
-| | |
-|---|---|
-| Questions and answers | `src/data/arete.en.json`, copied from the dataset's `paired/*.jsonl` by `scripts/import-arete.ts`, which checks every prompt and answer against the dataset's SHA-256. The tests check again. |
-| Chinese | `src/data/arete.zh.json`, machine-translated by Gemini 3.8 Flash. Tests check that every answer is there with the same Markdown structure. |
-| Rendering | Answers are Markdown, rendered at build time by a Bun macro (`src/data/load.ts`) with raw HTML escaped and only http(s) links kept. |
-| GIFs | `src/data/memes.ts`, pooled by model and dealt without repeats. Every clip was watched frame by frame and its alt text describes what's on screen. Served from GIPHY's CDN and credited. |
+|                       |                                                                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Questions and answers | `src/data/arete.en.json`, copied from the dataset's `paired/*.jsonl` by `scripts/import-arete.ts`, which checks every prompt and answer against the dataset's SHA-256. The tests check again.                                      |
+| Chinese               | `src/data/arete.zh.json`, machine-translated by Gemini 3.8 Flash. Tests check that every answer is there with the same Markdown structure.                                                                                         |
+| Rendering             | Answers are Markdown, rendered at build time by a Bun macro (`src/data/load.ts`) with raw HTML escaped and only http(s) links kept.                                                                                                |
+| Music                 | `src/data/music.ts`: “Access Denied!!!” by Figure, from Heavy Industries' _Maintenance EP_ (2004), CC BY-NC-ND 1.0. Streamed unmodified from the Internet Archive and credited in _What is this_; nothing is copied into the repo. |
+| GIFs                  | `src/data/memes.ts`, pooled by model and dealt without repeats. Every clip was watched frame by frame and its alt text describes what's on screen. Served from GIPHY's CDN and credited.                                           |
 
 To re-import, download the dataset's `paired/*.jsonl` files you need into a directory, then:
 
@@ -70,18 +71,20 @@ bun scripts/import-arete.ts <directory>
 
 ## Development
 
-Requires [Bun](https://bun.sh) 1.4 or later.
+Requires [Bun](https://bun.sh) 1.4.4 or later. Type checking, formatting and tests all use Bun's built-in tools; there is no `typescript` or Prettier package.
 
 ```sh
 bun install
 bun run dev      # dev server with hot reload
-bun run check    # type check (TypeScript 7) and tests
+bun check        # type check (bun check), formatting check and tests
+bun lint         # formatting check only (bun fmt --check)
+bun fmt          # format everything; options live in bunfig.toml
 bun run build    # writes dist/
 ```
 
 ## Deployment
 
-Static files on Cloudflare Pages at [humanrlhf.pages.dev](https://humanrlhf.pages.dev). Pages is connected to this GitHub repo: every push to `main` runs `bun install --frozen-lockfile && bun run build` on Cloudflare and publishes `dist/`. Branches other than `main` get no preview deployments.
+Static files on Cloudflare Pages at [humanrlhf.pages.dev](https://humanrlhf.pages.dev). Pages is connected to this GitHub repo: every push to `main` makes Cloudflare install dependencies with Bun, run `bun run build` and publish `dist/`. Branches other than `main` get no preview deployments.
 
 The project was created with Cloudflare's `cf` CLI, which can also redeploy the current `main` by hand:
 

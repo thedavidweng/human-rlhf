@@ -53,8 +53,12 @@ export function PersonnelFile({ summary, lang, onRetake }: { summary: Summary; l
             <li key={c.topic}>
               <span>{t.topics[c.topic]}</span>
               <span class="blocks" aria-label={`${t.short.qwen} ${c.qwen}, ${t.short.inkling} ${c.inkling}`}>
-                {Array.from({ length: c.qwen }, () => <i data-side="qwen" />)}
-                {Array.from({ length: c.inkling }, () => <i data-side="inkling" />)}
+                {Array.from({ length: c.qwen }, () => (
+                  <i data-side="qwen" />
+                ))}
+                {Array.from({ length: c.inkling }, () => (
+                  <i data-side="inkling" />
+                ))}
               </span>
             </li>
           ))}
