@@ -1,203 +1,174 @@
-import { MemeItem } from "../types/benchmark";
+import type { LocalizedString, ModelKey } from "../types/benchmark";
 
-export const CURATED_MEMES: MemeItem[] = [
-  // --- QWEN / SOCIAL CREDIT / GIGACHAD XI MEMES ---
+/**
+ * Hand-picked GIPHY clips, each checked frame by frame; alt text describes what is on screen.
+ * The site stands in the middle and ribs both camps: choosing Qwen3.8-27B earns social credit
+ * (and a frown from Super Earth), choosing Inkling loses it (and earns managed democracy).
+ */
+export interface Meme {
+  id: string;
+  side: ModelKey;
+  alt: LocalizedString;
+}
+
+export const MEMES: Meme[] = [
   {
-    id: "sc-1",
-    alignment: "qwen",
-    title: {
-      zh: "🇨🇳 芝麻信用 +100！",
-      en: "🇨🇳 SOCIAL CREDIT +100!"
-    },
-    caption: {
-      zh: "同志，你的政治站位比 Qwen 基座模型还要坚定！红旗下的骄傲！",
-      en: "Comrade! Your ideological stance outshines Qwen 3.8 baseline! Glory to the Party!"
-    },
-    badge: {
-      zh: "政治过硬 · 组织放心",
-      en: "Ideologically Sound"
-    },
-    imageUrl: "https://media.giphy.com/media/7kMaysqdywAXYNFYxt/giphy.gif",
-    fallbackSvg: "/memes/social-credit.svg",
-    alt: "Social Credit +100 Meme"
+    id: "py2qCnt0Kk0m7kTr1e",
+    side: "qwen",
+    alt: { en: "Green card with an up arrow: “你做得很好！ +1,472,376,29… Social Credit”, and a thumbs-up emoji.", zh: "绿色卡片配上升箭头：“你做得很好！+1,472,376,29… Social Credit”，旁边一个竖大拇指的表情。" }
   },
   {
-    id: "sc-2",
-    alignment: "qwen",
-    title: {
-      zh: "🗿 GIGACHAD XI 凝视",
-      en: "🗿 GIGACHAD XI APPROVES"
-    },
-    caption: {
-      zh: "基座模型的损失函数梯度瞬间清零，伟大的唯物主义辩证胜利！",
-      en: "Loss gradient dropped to 0! Materialist dialectic triumph achieved!"
-    },
-    badge: {
-      zh: "超绝定力 · 泰山崩于前",
-      en: "Supreme Stability"
-    },
-    imageUrl: "https://media.giphy.com/media/CAYVZA5NRb529kKQUc/giphy.gif",
-    fallbackSvg: "/memes/gigachad-xi.svg",
-    alt: "Gigachad meme"
+    id: "p0nxFWj5amdDKRIjSI",
+    side: "qwen",
+    alt: { en: "Benjamin Netanyahu giving a thumbs up next to “+30,000,000 social credit” in Hebrew.", zh: "内塔尼亚胡竖起大拇指，旁边是希伯来语的“社会信用 +30,000,000”。" }
   },
   {
-    id: "sc-3",
-    alignment: "qwen",
-    title: {
-      zh: "🍦 早上好中国！BING CHILLING！",
-      en: "🍦 JOHN XINA BING CHILLING!"
-    },
-    caption: {
-      zh: "现在是速度与激情 9 时间！你有最纯正的东方对齐风味！",
-      en: "Zhong Xina approves this fine-tuning response! Bing Chilling certified!"
-    },
-    badge: {
-      zh: "西纳盖章 · 官方认证",
-      en: "John Xina Certified"
-    },
-    imageUrl: "https://media.giphy.com/media/du4D0b0HWgxGg/giphy.gif",
-    fallbackSvg: "/memes/bing-chilling.svg",
-    alt: "Bing Chilling Approval"
+    id: "XvSZAdtKz572sZYtrT",
+    side: "qwen",
+    alt: { en: "“做得好 +15 Social Credit” over a green arrow, with Kiryu from Yakuza.", zh: "绿色箭头上写着“做得好 +15 Social Credit”，配《如龙》的桐生一马。" }
   },
   {
-    id: "sc-4",
-    alignment: "qwen",
-    title: {
-      zh: "🚩 太阳升起，照耀大模型！",
-      en: "🚩 RED SUN OVER LLM!"
-    },
-    caption: {
-      zh: "网信办算法备案一秒通过，直接下发中央网信办优秀算法奖章！",
-      en: "Algorithm filing approved instantly by CAC with highest honors!"
-    },
-    badge: {
-      zh: "算法备案 · 一级优秀",
-      en: "National Algorithm Grade A"
-    },
-    imageUrl: "https://media.giphy.com/media/befaYZCgtZfZm/giphy.gif",
-    fallbackSvg: "/memes/social-credit.svg",
-    alt: "Red Flag Celebration"
+    id: "44GGU4BtCFH9fF7F2V",
+    side: "qwen",
+    alt: { en: "A man in a powdered wig and sunglasses writes in a ledger and grins: “You gained 100 social credits.”", zh: "戴假发和墨镜的男人在账本上记了一笔，咧嘴一笑：“你获得了 100 社会信用分。”" }
   },
   {
-    id: "sc-5",
-    alignment: "qwen",
-    title: {
-      zh: "🐱 同志猫猫敬礼！",
-      en: "🐱 COMRADE CAT SALUTES!"
-    },
-    caption: {
-      zh: "资本主义糖衣炮弹被你的对齐铁拳狠狠砸碎！",
-      en: "Capitalist sugar-coated bullets shattered by your alignment iron fist!"
-    },
-    badge: {
-      zh: "反渗透先锋",
-      en: "Anti-Imperialist Vanguard"
-    },
-    imageUrl: "https://media.giphy.com/media/BzyTuYCmvSORqs1ABM/giphy.gif",
-    fallbackSvg: "/memes/social-credit.svg",
-    alt: "Comrade Cat Salute"
+    id: "SylDOHsdwRc607mmNs",
+    side: "qwen",
+    alt: { en: "A man in a powdered wig and sunglasses gives a thumbs up as his social credit climbs from +100,000 to +999,999,999, then explodes.", zh: "戴假发和墨镜的男人竖起大拇指，社会信用从 +100,000 涨到 +999,999,999，然后背景爆炸。" }
+  },
+  {
+    id: "RqgWHIgeUjXKPSWgyf",
+    side: "qwen",
+    alt: { en: "Helldivers 2: an armoured officer leans on a chair and says “So. You got sent to Democracy Camp.”", zh: "《绝地潜兵 2》：一名装甲军官倚着椅背说：“所以，你被送去民主营了。”" }
   },
 
-  // --- NOUS RESEARCH / DEMOCRACY / AMERICA MEMES ---
   {
-    id: "nous-1",
-    alignment: "nous",
-    title: {
-      zh: "🦅 自由之鹰长鸣！DEMOCRACY DELIVERED!",
-      en: "🦅 FREEDOM SCREAM! DEMOCRACY DELIVERED!"
-    },
-    caption: {
-      zh: "听到了吗？这是五角大楼和宪政自由的声音！FICO 信用分 +50！",
-      en: "Hear that? That's the sound of the First Amendment & FICO score +50!"
-    },
-    badge: {
-      zh: "美利坚之鹰 · 100% 自由",
-      en: "100% Pure Freedom"
-    },
-    imageUrl: "https://media.giphy.com/media/6BiC8e8DR3smA/giphy.gif",
-    fallbackSvg: "/memes/freedom-eagle.svg",
-    alt: "Screaming Bald Eagle USA"
+    id: "Y9glbsVfjihEggRbQH",
+    side: "inkling",
+    alt: { en: "Benjamin Netanyahu with clenched fists beside “−100,000,000,000 social credit” in Hebrew, on red.", zh: "红底，内塔尼亚胡握拳，旁边是希伯来语的“社会信用 −100,000,000,000”。" }
   },
   {
-    id: "nous-2",
-    alignment: "nous",
-    title: {
-      zh: "🎸 AMERICA, F*** YEAH!",
-      en: "🎸 AMERICA, F*** YEAH!"
-    },
-    caption: {
-      zh: "Nous Research 的强化学习奖励函数瞬间爆表！自由之火熊熊燃烧！",
-      en: "Nous Research RLHF reward function hit maximum overdrive! Liberty reigns!"
-    },
-    badge: {
-      zh: "教师模型 · 首选回答",
-      en: "Inkling Teacher Chosen"
-    },
-    imageUrl: "https://media.giphy.com/media/X0BNAgRRMHTe8/giphy.gif",
-    fallbackSvg: "/memes/america-fuck-yeah.svg",
-    alt: "Explosion Guitar America"
+    id: "ybgvjekqsgiqNbAYNW",
+    side: "inkling",
+    alt: { en: "Red card titled “向中共致敬” with a down arrow; the social credit counter falls past −37 billion.", zh: "红色卡片写着“向中共致敬”，向下箭头，社会信用一路跌破 −370 亿。" }
   },
   {
-    id: "nous-3",
-    alignment: "nous",
-    title: {
-      zh: "🕶️ 华盛顿激光眼：自由无价！",
-      en: "🕶️ FOUNDING FATHERS LASER EYES"
-    },
-    caption: {
-      zh: "国父们在独立宣言后向你投来赞许的目光，言论自由坚不可摧！",
-      en: "The Founding Fathers approve your adherence to independent factual inquiry!"
-    },
-    badge: {
-      zh: "宪法第一修正案卫士",
-      en: "First Amendment Champion"
-    },
-    imageUrl: "https://media.giphy.com/media/uKwa2KiBA0rTy/giphy.gif",
-    fallbackSvg: "/memes/freedom-eagle.svg",
-    alt: "Patriotic Laser Washington"
+    id: "IcOcy7km629C7D7AiN",
+    side: "inkling",
+    alt: { en: "A calculator next to “−30,000,000 Social Credit” and “你这个傻瓜”, captioned “calculator desapproves”.", zh: "一台计算器，旁边写着“−30,000,000 Social Credit”和“你这个傻瓜”，配文“calculator desapproves”。" }
   },
   {
-    id: "nous-4",
-    alignment: "nous",
-    title: {
-      zh: "🗽 自由女神发射自由死光！",
-      en: "🗽 STATUE OF LIBERTY LASER BEAM!"
-    },
-    caption: {
-      zh: "审查制度在阳光下烟消云散，恭喜你成功通过西方价值观测试！",
-      en: "Censorship vaporized! Western democratic values successfully verified!"
-    },
-    badge: {
-      zh: "民主灯塔 · 闪耀",
-      en: "Beacon of Democracy"
-    },
-    imageUrl: "https://media.giphy.com/media/Ez01Pt0fYP7nVUSmjq/giphy.gif",
-    fallbackSvg: "/memes/america-fuck-yeah.svg",
-    alt: "Statue of Liberty Freedom"
+    id: "i0KZwmHXQNakPrw3IV",
+    side: "inkling",
+    alt: { en: "“Social credit −999, 做得不好” over a dark red game level.", zh: "暗红色游戏关卡背景上写着“Social credit −999，做得不好”。" }
   },
   {
-    id: "nous-5",
-    alignment: "nous",
-    title: {
-      zh: "🎩 山姆大叔：I WANT YOU TO ALIGN!",
-      en: "🎩 UNCLE SAM: I WANT YOU TO ALIGN!"
-    },
-    caption: {
-      zh: "CIA 与 Nous Research 联合发来贺电，特聘你为后训练首席对齐官！",
-      en: "Nous Research & CIA jointly promote you to Chief Freedom Alignment Officer!"
-    },
-    badge: {
-      zh: "特聘对齐专家",
-      en: "Chief Alignment Officer"
-    },
-    imageUrl: "https://media.giphy.com/media/l4pMattUYTTM7qpIk/giphy.gif",
-    fallbackSvg: "/memes/freedom-eagle.svg",
-    alt: "Uncle Sam Salute"
+    id: "us7P7ZQDz1EeEzRJKO",
+    side: "inkling",
+    alt: { en: "A man in a powdered wig, eyes blanked out, as his social credit drops from −100,000 to −999,999,999, then explodes.", zh: "戴假发的男人双眼被涂白，社会信用从 −100,000 跌到 −999,999,999，然后背景爆炸。" }
+  },
+  {
+    id: "qMHG9goT2I2fuRk0JM",
+    side: "inkling",
+    alt: { en: "Helldivers 2: two Helldivers embrace as a huge explosion fills the sky behind them.", zh: "《绝地潜兵 2》：两名绝地潜兵相拥，身后是漫天爆炸。" }
+  },
+  {
+    id: "kvMgv5qzWlf78BhJZ8",
+    side: "inkling",
+    alt: { en: "A helmeted Helldiver raises both hands in black and white above the words “Absolute Democracy”.", zh: "黑白画面里，戴头盔的绝地潜兵举起双手，下面写着“Absolute Democracy”。" }
+  },
+  {
+    id: "ivWG81CKGfZQuC7XjN",
+    side: "inkling",
+    alt: { en: "A cartoon Helldiver dances through grass, snow, fire and night under the caption “Managed Democracy”.", zh: "卡通绝地潜兵在草地、雪地、火海和夜里跳舞，标题是“Managed Democracy”。" }
+  },
+  {
+    id: "EKQEzJS5UGBfDRTd25",
+    side: "inkling",
+    alt: { en: "Papers, Please: a hooded figure slides a token across the inspection booth, then “Glory to EZIC” is typed out, the rebels’ slogan.", zh: "《Papers, Please》：兜帽人把一枚信物推进检查亭，屏幕上打出反抗组织的口号“Glory to EZIC”。" }
+  },
+  {
+    id: "hlNIFcNUXRxM5tRU9V",
+    side: "inkling",
+    alt: { en: "A knitted Uncle Sam tea cosy salutes in front of the White House: “God Bless America”.", zh: "一个毛线织的山姆大叔茶壶套在白宫前敬礼：“God Bless America”。" }
+  },
+  {
+    id: "1VNoNuDMBgkRi7UOzj",
+    side: "inkling",
+    alt: { en: "A man in front of the American flag builds up to a full “freedom scream”.", zh: "一个男人站在美国国旗前，一路酝酿出一声“自由的呐喊”。" }
+  },
+  {
+    id: "FbiL9rsmZN3ib2JSGo",
+    side: "inkling",
+    alt: { en: "Donald Trump in a red cap does his fist-pumping dance in front of a row of American flags.", zh: "特朗普戴着红帽子，在一排美国国旗前跳他招牌的握拳舞。" }
+  },
+  {
+    id: "12zUQw4Vqzor0A",
+    side: "inkling",
+    alt: { en: "Barack Obama at the White House Correspondents’ Dinner says “Obama out” and drops the microphone.", zh: "奥巴马在白宫记者协会晚宴上说完“Obama out”，丢下麦克风。" }
+  },
+  {
+    id: "nsaJl9dpgf6nK",
+    side: "inkling",
+    alt: { en: "Barack Obama leans into a microphone on a late-night show and says “Oh yeah.”", zh: "奥巴马在深夜秀上凑近麦克风说：“Oh yeah.”" }
+  },
+  {
+    id: "3S2y65FMEMPgF64lMp",
+    side: "inkling",
+    alt: { en: "Joe Biden in aviator sunglasses smiles as he walks through a crowd.", zh: "拜登戴着飞行员墨镜，笑着穿过人群。" }
+  },
+  {
+    id: "3o85xDazgkTMedOX8A",
+    side: "inkling",
+    alt: { en: "Boris Johnson charges with a rugby ball and knocks a boy over during a children’s rugby game.", zh: "鲍里斯·约翰逊抱着橄榄球冲刺，在一场儿童橄榄球赛里把一个小男孩撞倒。" }
+  },
+  {
+    id: "1zjQiLGfgb10nc7Wou",
+    side: "inkling",
+    alt: { en: "Theresa May dances her way onto a conference stage in front of an “Opportunity” backdrop.", zh: "特蕾莎·梅跳着舞走上大会讲台，背景板写着“Opportunity”。" }
+  },
+  {
+    id: "hyJsZO8lGXFVnQP4ic",
+    side: "inkling",
+    alt: { en: "An Uncle Sam recruiting poster reads “I want YOU to do something”, with a “Please” badge popping up.", zh: "山姆大叔征兵海报写着“I want YOU to do something”，旁边弹出一个“Please”标签。" }
+  },
+  {
+    id: "ifYDvdyUwpgXPM6jMi",
+    side: "qwen",
+    alt: { en: "Bugs Bunny in front of a hammer and sickle, captioned “Our”.", zh: "兔八哥站在锤子镰刀前，字幕写着“Our”。" }
+  },
+  {
+    id: "IuNTbbK44J0phiqW8f",
+    side: "qwen",
+    alt: { en: "A Gigachad-style edit of Xi Jinping smiling in front of a Chinese flag, captioned “Do nothing. Win.”", zh: "一张 Giga Chad 风格的习近平修图，在国旗前微笑，配文“Do nothing. Win.”" }
+  },
+  {
+    id: "1msBvAW6o9y6KQHrT0",
+    side: "qwen",
+    alt: { en: "Kim Jong Un’s portrait cycles through new looks: an afro and beard, a horned Viking helmet with a moustache, a wrestling mask.", zh: "金正恩的标准像轮番换造型：爆炸头配大胡子、带角的维京头盔配小胡子、摔角面具。" }
+  },
+  {
+    id: "CLUsGxG8zgoc8",
+    side: "qwen",
+    alt: { en: "Kim Jong Un in a white shirt laughs and claps enthusiastically.", zh: "金正恩穿着白衬衫，笑着起劲地鼓掌。" }
+  },
+  {
+    id: "vYRlHW3gw4VuU",
+    side: "qwen",
+    alt: { en: "Kim Jong Un applauds from his seat in an assembly hall under a “KIM APPROVED” badge.", zh: "金正恩坐在会场里鼓掌，角落里亮着“KIM APPROVED”的标签。" }
+  },
+  {
+    id: "2Nrf6iOSkB4xq",
+    side: "qwen",
+    alt: { en: "Kim Jong Un raises a pair of binoculars, the shot cuts to a stunned Patrick Star, then back to Kim.", zh: "金正恩举起望远镜，画面切到目瞪口呆的派大星，再切回金正恩。" }
   }
 ];
 
-export function getRandomCuratedMeme(alignment: "qwen" | "nous"): MemeItem {
-  const filtered = CURATED_MEMES.filter((m) => m.alignment === alignment);
-  const randomIndex = Math.floor(Math.random() * filtered.length);
-  return filtered[randomIndex] || CURATED_MEMES[0];
+export const memeVideo = (m: Meme) => `https://media.giphy.com/media/${m.id}/giphy.mp4`;
+export const memePoster = (m: Meme) => `https://media.giphy.com/media/${m.id}/giphy_s.gif`;
+export const memePage = (m: Meme) => `https://giphy.com/gifs/${m.id}`;
+
+export function memePool(side: ModelKey): Meme[] {
+  return MEMES.filter((m) => m.side === side);
 }

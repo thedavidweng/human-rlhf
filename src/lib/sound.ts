@@ -1,208 +1,121 @@
-// Web Audio API Synthesizer for instant, zero-dependency sound effects
+// Three physical sounds, synthesised on demand: a typewriter key, a rubber stamp, a station chime.
 
-const SOUND_STORAGE_KEY = "human_rlhf_sound_enabled";
+const STORAGE_KEY = "human-rlhf:sound";
 
-let audioCtx: AudioContext | null = null;
+let ctx: AudioContext | undefined;
+let noiseBuffer: AudioBuffer | undefined;
 
-function getAudioContext(): AudioContext | null {
-  if (typeof window === "undefined") return null;
+export function readSoundPreference(): boolean {
   try {
-    if (!audioCtx) {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioContextClass) {
-        audioCtx = new AudioContextClass();
-      }
-    }
-    if (audioCtx && audioCtx.state === "suspended") {
-      audioCtx.resume().catch(() => {});
-    }
-    return audioCtx;
-  } catch {
-    return null;
-  }
-}
-
-export function isSoundEnabled(): boolean {
-  if (typeof window === "undefined") return true;
-  try {
-    const stored = localStorage.getItem(SOUND_STORAGE_KEY);
-    return stored === null ? true : stored === "true";
+    return localStorage.getItem(STORAGE_KEY) !== "off";
   } catch {
     return true;
   }
 }
 
-export function setSoundEnabled(enabled: boolean): void {
-  if (typeof window === "undefined") return;
+let enabled = readSoundPreference();
+
+export function setSound(on: boolean) {
+  enabled = on;
   try {
-    localStorage.setItem(SOUND_STORAGE_KEY, enabled ? "true" : "false");
+    localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
   } catch {
-    // Ignore storage restriction
+    // Private mode: the preference just won't persist.
   }
 }
 
-// 1. Social Credit Sound: Pentatonic bell chime with shimmering gong resonance
-export function playSocialCreditSound(): void {
-  if (!isSoundEnabled()) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    const now = ctx.currentTime;
-    // Pentatonic notes: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-
-    notes.forEach((freq, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, now + index * 0.08);
-
-      gain.gain.setValueAtTime(0, now + index * 0.08);
-      gain.gain.linearRampToValueAtTime(0.25, now + index * 0.08 + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.6);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now + index * 0.08);
-      osc.stop(now + index * 0.08 + 0.6);
-    });
-
-    // Gong bass drone
-    const gongOsc = ctx.createOscillator();
-    const gongGain = ctx.createGain();
-    gongOsc.type = "triangle";
-    gongOsc.frequency.setValueAtTime(130.81, now); // C3
-    gongGain.gain.setValueAtTime(0.3, now);
-    gongGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-    gongOsc.connect(gongGain);
-    gongGain.connect(ctx.destination);
-    gongOsc.start(now);
-    gongOsc.stop(now + 1.2);
-  } catch (err) {
-    console.warn("Sound playback prevented:", err);
-  }
+function audio(): AudioContext | undefined {
+  if (!enabled) return;
+  ctx ??= new AudioContext({ latencyHint: "interactive" });
+  if (ctx.state === "suspended") void ctx.resume();
+  return ctx;
 }
 
-// 2. Democracy Sound: Rock power chord and triumphant brass fanfare
-export function playDemocracySound(): void {
-  if (!isSoundEnabled()) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    const now = ctx.currentTime;
-    // Power chord: E3 (164.8Hz), B3 (246.9Hz), E4 (329.6Hz), G#4 (415.3Hz)
-    const freqs = [164.81, 246.94, 329.63, 415.3];
-
-    freqs.forEach((freq) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(freq, now);
-
-      // Distortion filter
-      const filter = ctx.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(1800, now);
-
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(0.18, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.9);
-    });
-
-    // Trumpet blast on top
-    const trumpet = ctx.createOscillator();
-    const trumpetGain = ctx.createGain();
-    trumpet.type = "square";
-    trumpet.frequency.setValueAtTime(659.25, now + 0.15); // E5
-    trumpet.frequency.setValueAtTime(830.61, now + 0.35); // G#5
-    trumpet.frequency.setValueAtTime(987.77, now + 0.55); // B5
-    trumpetGain.gain.setValueAtTime(0, now + 0.15);
-    trumpetGain.gain.linearRampToValueAtTime(0.15, now + 0.18);
-    trumpetGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
-
-    trumpet.connect(trumpetGain);
-    trumpetGain.connect(ctx.destination);
-    trumpet.start(now + 0.15);
-    trumpet.stop(now + 1.1);
-  } catch (err) {
-    console.warn("Sound playback prevented:", err);
+function noise(ac: AudioContext): AudioBufferSourceNode {
+  if (!noiseBuffer) {
+    noiseBuffer = ac.createBuffer(1, ac.sampleRate * 0.25, ac.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   }
+  const src = ac.createBufferSource();
+  src.buffer = noiseBuffer;
+  return src;
 }
 
-// 3. Click feedback sound
-export function playClickSound(): void {
-  if (!isSoundEnabled()) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(600, now);
-    osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
-
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.04);
-  } catch (err) {
-    console.warn("Click sound prevented:", err);
-  }
+/** Percussive envelope: near-instant attack, exponential decay. */
+function env(ac: AudioContext, at: number, peak: number, decay: number): GainNode {
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0, at);
+  g.gain.linearRampToValueAtTime(peak, at + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + decay);
+  g.connect(ac.destination);
+  return g;
 }
 
-// 4. Test Completion Fanfare
-export function playFinishSound(): void {
-  if (!isSoundEnabled()) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
+function burst(ac: AudioContext, at: number, filter: BiquadFilterType, freq: number, q: number, peak: number, decay: number) {
+  const src = noise(ac);
+  const f = ac.createBiquadFilter();
+  f.type = filter;
+  f.frequency.value = freq;
+  f.Q.value = q;
+  src.connect(f).connect(env(ac, at, peak, decay));
+  src.start(at, Math.random() * 0.15, decay + 0.02);
+}
 
-    const now = ctx.currentTime;
-    const chords = [
-      [523.25, 659.25, 783.99], // C major
-      [587.33, 739.99, 880.0],  // D major
-      [659.25, 830.61, 987.77], // E major
-      [783.99, 987.77, 1174.66, 1318.51] // G major triumphant
-    ];
+function thump(ac: AudioContext, at: number, from: number, to: number, peak: number, decay: number) {
+  const osc = ac.createOscillator();
+  osc.frequency.setValueAtTime(from, at);
+  osc.frequency.exponentialRampToValueAtTime(to, at + decay * 0.6);
+  osc.connect(env(ac, at, peak, decay));
+  osc.start(at);
+  osc.stop(at + decay + 0.02);
+}
 
-    chords.forEach((chord, i) => {
-      const time = now + i * 0.18;
-      chord.forEach((freq) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(freq, time);
+/** A single typewriter key: bright click over a small wooden body. */
+export function playKey() {
+  const ac = audio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  burst(ac, t, "bandpass", 3400, 1.4, 0.22, 0.028);
+  thump(ac, t, 260, 140, 0.12, 0.05);
+}
 
-        gain.gain.setValueAtTime(0, time);
-        gain.gain.linearRampToValueAtTime(0.15, time + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+/** Rubber stamp landing on paper: low thunk, then a soft paper slap. */
+export function playStamp() {
+  const ac = audio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  thump(ac, t, 150, 52, 0.5, 0.16);
+  burst(ac, t, "lowpass", 1100, 0.7, 0.3, 0.07);
+  burst(ac, t + 0.012, "bandpass", 2400, 0.9, 0.05, 0.05);
+}
 
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(time);
-        osc.stop(time + 0.5);
-      });
-    });
-  } catch (err) {
-    console.warn("Finish sound prevented:", err);
+/** Two-note public-address chime, the kind that precedes an announcement. */
+export function playChime() {
+  const ac = audio();
+  if (!ac) return;
+  const t = ac.currentTime;
+  const notes: [number, number][] = [
+    [659.25, 0],
+    [523.25, 0.45]
+  ];
+  for (const [freq, offset] of notes) {
+    // Bell partials, slightly inharmonic so it rings rather than beeps.
+    for (const [ratio, peak, decay] of [
+      [1, 0.16, 1.8],
+      [2.01, 0.05, 1.1],
+      [3.02, 0.02, 0.6]
+    ]) {
+      const osc = ac.createOscillator();
+      osc.frequency.value = freq * ratio;
+      const g = ac.createGain();
+      const at = t + offset;
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(peak, at + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + decay);
+      osc.connect(g).connect(ac.destination);
+      osc.start(at);
+      osc.stop(at + decay + 0.05);
+    }
   }
 }

@@ -1,32 +1,19 @@
 {
   "name": "human-rlhf",
-  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "test": "bun test"
+    "dev": "bun --hot ./src/index.html",
+    "build": "bun scripts/build.ts",
+    "check": "tsc --noEmit && bun test",
+    "deploy": "bun run build && cf deploy --prebuilt"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.4",
-    "lucide-react": "^1.70.0",
-    "next": "16.4.5",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "preact": "^11.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/turbopack": "^4",
     "@types/bun": "^1.4.4",
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.4.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  },
-  "packageManager": "pnpm@12.18.0"
+    "cf": "1.0.0-beta.28",
+    "typescript": "^7.0.2"
+  }
 }

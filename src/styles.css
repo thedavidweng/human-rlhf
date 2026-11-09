@@ -1,0 +1,1330 @@
+@layer base, components, skins, motion;
+
+
+@property --q {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0.5;
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --paper: light-dark(#f2efe8, #141414);
+    --surface: light-dark(#ffffff, #1c1c1c);
+    --ink: light-dark(#161616, #ebe7df);
+    --ink-2: light-dark(#4b4b4b, #b3afa7);
+    --ink-3: light-dark(#767470, #85827c);
+    --line: light-dark(#dcd8ce, #303030);
+    --line-strong: light-dark(#b9b4a8, #4a4a4a);
+    --red: light-dark(#b42318, #f0604f);
+    --qwen: light-dark(#9a6a12, #dcae5c);
+    --inkling: light-dark(#24569e, #85aaeb);
+    /* Bars stay dark in both themes. */
+    --bar: light-dark(#161616, #0a0a0a);
+    --on-bar: #f2eee6;
+    --font: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    font: 16px/1.6 var(--font);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  #app {
+    display: contents;
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    &:hover {
+      text-decoration-thickness: 2px;
+    }
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--red);
+    outline-offset: 2px;
+  }
+
+  [data-side="qwen"] {
+    --side: var(--qwen);
+    --side-solid: #835a10;
+  }
+  [data-side="inkling"] {
+    --side: var(--inkling);
+    --side-solid: #24569e;
+  }
+}
+
+@layer components {
+  .kicker {
+    color: var(--ink-3);
+    font: 600 12px var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 12px max(16px, calc(50% - 480px));
+    background: var(--bar);
+    color: var(--on-bar);
+    border-bottom: 4px solid var(--red);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    .link {
+      color: var(--on-bar);
+      opacity: 0.85;
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .link {
+    padding: 4px 0;
+    border: 0;
+    background: none;
+    color: var(--ink-2);
+    font-size: 14px;
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+    &.icon {
+      display: grid;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      margin: -6px;
+      padding: 0;
+      &:hover {
+        background: color-mix(in oklab, var(--on-bar) 14%, transparent);
+      }
+    }
+  }
+
+  .page {
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .hero {
+    display: grid;
+    gap: 20px 32px;
+    align-items: start;
+    margin: 36px 0 32px;
+    @media (width >= 680px) {
+      grid-template-columns: 1fr auto;
+    }
+    h1 {
+      margin-top: 8px;
+      font-size: clamp(28px, 4.6vw, 40px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+  }
+
+  .hero-body {
+    max-width: 58ch;
+    margin-top: 14px;
+    color: var(--ink-2);
+    font-size: 17px;
+    text-wrap: pretty;
+  }
+
+  /* An official-looking seal. To most it is a logo; it also happens to be watching. */
+  .seal {
+    display: grid;
+    place-items: center;
+    width: 120px;
+    aspect-ratio: 1;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    outline: 1px solid var(--ink);
+    outline-offset: 4px;
+    margin: 6px;
+    @media (width < 680px) {
+      display: none;
+    }
+  }
+
+  /* Sheets read like forms: a dark header strip over a plain white page. */
+  .sheet {
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    overflow: hidden;
+    view-transition-name: sheet;
+  }
+
+  .band {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px clamp(16px, 4vw, 28px);
+    background: var(--bar);
+    color: var(--on-bar);
+    font: 600 12px var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .band-org {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .band-ref {
+    opacity: 0.7;
+    text-align: right;
+  }
+
+  .sheet-main,
+  .notice-main {
+    padding: clamp(20px, 4.5vw, 32px);
+  }
+
+  .prompt {
+    font-size: clamp(19px, 2.6vw, 22px);
+    line-height: 1.5;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    text-wrap: pretty;
+  }
+
+  .prompt-other {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  .sheet-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    margin-top: 12px;
+    color: var(--ink-3);
+    font: 12px var(--mono);
+    .link {
+      font: 12px var(--mono);
+      color: var(--ink-3);
+    }
+  }
+
+  .choose {
+    margin: 28px 0 12px;
+  }
+
+  .options {
+    display: grid;
+    align-items: start;
+    gap: 12px;
+    @media (width >= 720px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .mt-note {
+    margin-top: 10px;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+
+  .option {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    align-content: start;
+    gap: 12px;
+    padding: 16px 18px;
+    border: 2px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    transition:
+      border-color 120ms,
+      background-color 120ms,
+      opacity 200ms;
+    &:has(.pick:hover:not(:disabled)) {
+      border-color: var(--ink);
+    }
+    &[data-side] {
+      border-color: var(--side);
+      background: color-mix(in oklab, var(--side) 8%, var(--surface));
+    }
+    &[data-dim] {
+      opacity: 0.45;
+    }
+  }
+
+  .option-key {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    font: 700 14px var(--mono);
+    [data-side] > & {
+      background: var(--side);
+      border-color: var(--side);
+      color: #fff;
+    }
+  }
+
+  /* Answers run to a few thousand characters; show the opening and let people read on. */
+  .answer {
+    max-height: 18em;
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.6;
+    mask-image: linear-gradient(to bottom, #000 70%, transparent);
+    [data-open] > & {
+      max-height: none;
+      mask-image: none;
+    }
+    > :first-child {
+      margin-top: 0;
+    }
+    p,
+    ul,
+    ol {
+      margin: 0 0 0.75em;
+    }
+    ul,
+    ol {
+      padding-left: 1.3em;
+    }
+    li + li {
+      margin-top: 0.25em;
+    }
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin: 1em 0 0.4em;
+      font-size: 1em;
+    }
+    hr {
+      border: 0;
+      border-top: 1px solid var(--line);
+    }
+    blockquote {
+      margin: 0 0 0.75em;
+      padding: 2px 0 2px 12px;
+      border-left: 3px solid var(--line-strong);
+      color: var(--ink-2);
+      > :last-child {
+        margin-bottom: 0;
+      }
+    }
+    /* Answers often compare things in tables. Keep columns readable and let a wide table scroll
+       sideways inside the card instead of squeezing a column to one character. */
+    table {
+      display: block;
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 0 0 0.75em;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    th,
+    td {
+      min-width: 7em;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--paper);
+    }
+  }
+
+  .more {
+    justify-self: start;
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* The pick button spans the card: the biggest, most obvious target, with its shortcuts on it. */
+  .pick {
+    justify-content: space-between;
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 16px;
+    font-size: 17px;
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+
+  .keys {
+    display: flex;
+    gap: 6px;
+    @media (hover: none) {
+      display: none;
+    }
+  }
+
+  kbd {
+    display: grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in oklab, var(--on-bar) 40%, transparent);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    font: 600 13px var(--mono);
+  }
+
+  .progress {
+    margin-top: 24px;
+  }
+
+  .pips {
+    display: flex;
+    gap: 4px;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+    li {
+      flex: 1;
+      height: 6px;
+      background: var(--line);
+      transition: background-color 300ms;
+      &[data-current] {
+        background: var(--ink-3);
+      }
+      &[data-side] {
+        background: var(--side);
+      }
+    }
+  }
+
+  .split-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: var(--ink-2);
+    font-size: 13px;
+    b {
+      color: var(--side);
+      font: 700 13px var(--mono);
+    }
+  }
+
+  .split-bar {
+    height: 8px;
+    background: linear-gradient(90deg, var(--qwen) calc(var(--q) * 100%), var(--surface) 0 calc(var(--q) * 100% + 2px), var(--inkling) 0);
+    transition: --q 600ms var(--ease-out);
+    &[data-empty] {
+      background: var(--line);
+    }
+  }
+
+  dialog {
+    width: min(580px, 100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 24px 48px -24px rgb(0 0 0 / 0.5);
+    overflow: auto;
+    overscroll-behavior: contain;
+    &::backdrop {
+      background: rgb(10 10 10 / 0.6);
+    }
+    form {
+      margin: 0;
+    }
+  }
+
+  /* Confirmation panel: the plainest way to say what was recorded. */
+  .panel {
+    padding: 18px 20px;
+    background: var(--side-solid);
+    color: #fff;
+    p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+    h2 {
+      margin-top: 2px;
+      font-size: clamp(26px, 5vw, 32px);
+      line-height: 1.2;
+      letter-spacing: -0.015em;
+    }
+  }
+
+  .meme {
+    position: relative;
+    margin: 20px 0 0;
+    video {
+      display: block;
+      width: 100%;
+      height: clamp(180px, 34dvh, 300px);
+      border-radius: 2px;
+      background: #0d0d0d;
+      object-fit: contain;
+    }
+    figcaption {
+      margin-top: 6px;
+      font: 11px var(--mono);
+      a {
+        color: var(--ink-3);
+      }
+    }
+    .stamp {
+      position: absolute;
+      right: 14px;
+      bottom: 32px;
+    }
+  }
+
+  .stamp {
+    display: grid;
+    justify-items: center;
+    padding: 6px 12px 5px;
+    border: 2.5px solid var(--red);
+    border-radius: 4px;
+    outline: 1px solid var(--red);
+    outline-offset: 3px;
+    background: color-mix(in oklab, var(--surface) 88%, transparent);
+    color: var(--red);
+    rotate: -8deg;
+    /* Uneven ink: a stamp never presses evenly. */
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.2 1.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    .eye {
+      color: var(--red);
+      --eye-white: transparent;
+    }
+    span {
+      font: 800 16px/1.1 var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    small {
+      margin-top: 2px;
+      font: 600 10px var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  }
+
+  .provenance {
+    display: grid;
+    gap: 4px;
+    margin: 20px 0 0;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font: 12px var(--mono);
+    dt {
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    dd {
+      margin: 0;
+    }
+  }
+
+  .notice-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    margin-top: 24px;
+  }
+
+  .hint {
+    color: var(--ink-3);
+    font: 12px var(--mono);
+    @media (hover: none) {
+      display: none;
+    }
+  }
+
+  /* Buttons with a solid bottom edge, the way public-service forms do it. */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 2px;
+    background: var(--surface);
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 2px 0 var(--ink);
+    &:hover {
+      background: var(--paper);
+    }
+    &:active {
+      translate: 0 2px;
+      box-shadow: none;
+    }
+    &.primary {
+      border-color: var(--bar);
+      background: var(--bar);
+      color: var(--on-bar);
+      box-shadow: 0 2px 0 var(--red);
+      &:hover {
+        background: color-mix(in oklab, var(--bar) 85%, var(--on-bar));
+      }
+    }
+  }
+
+  .about {
+    form {
+      padding: clamp(20px, 5vw, 32px);
+    }
+    h2 {
+      font-size: 24px;
+      letter-spacing: -0.015em;
+    }
+    p {
+      margin-top: 12px;
+      color: var(--ink-2);
+      text-wrap: pretty;
+    }
+    h3 {
+      margin-top: 24px;
+    }
+    .button {
+      margin-top: 24px;
+    }
+  }
+
+  .reward {
+    margin-top: 10px;
+    p {
+      margin: 0 0 12px;
+    }
+    .reward-skins {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .button[aria-pressed="true"] {
+      background: var(--bar);
+      color: var(--on-bar);
+    }
+  }
+
+  .papers {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    li {
+      display: grid;
+      gap: 2px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--line-strong);
+      font-size: 14px;
+    }
+    span {
+      color: var(--ink-2);
+    }
+    a {
+      color: var(--ink-3);
+      font: 12px var(--mono);
+      width: fit-content;
+    }
+  }
+
+  .file-title {
+    font-size: clamp(28px, 4.5vw, 34px);
+    letter-spacing: -0.02em;
+  }
+
+  .file-meta {
+    display: grid;
+    gap: 12px 28px;
+    margin: 20px 0;
+    padding: 14px 0;
+    border-block: 1px solid var(--line);
+    @media (width >= 600px) {
+      grid-template-columns: auto auto 1fr;
+    }
+    dt {
+      color: var(--ink-3);
+      font: 12px var(--mono);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    dd {
+      margin: 2px 0 0;
+    }
+  }
+
+  .file-class {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .file-note {
+    margin: 14px 0 28px;
+    color: var(--ink-2);
+  }
+
+  .file-cats {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+    }
+  }
+
+  .blocks {
+    display: flex;
+    gap: 3px;
+    flex: none;
+    i {
+      width: 10px;
+      height: 10px;
+      background: var(--side);
+    }
+  }
+
+  .file-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .colophon {
+    display: grid;
+    gap: 6px;
+    margin-top: 56px;
+    padding: 24px max(16px, calc(50% - 480px)) 32px;
+    border-top: 4px solid var(--red);
+    background: var(--bar);
+    color: var(--on-bar);
+    font-size: 13px;
+    a {
+      font: 12px var(--mono);
+      opacity: 0.8;
+    }
+  }
+
+  .eye {
+    flex: none;
+    color: var(--ink);
+    overflow: visible;
+    .masthead &,
+    .band &,
+    .colophon & {
+      color: var(--on-bar);
+      --eye-white: var(--bar);
+    }
+    .colophon & {
+      margin-bottom: 4px;
+    }
+  }
+}
+
+@layer components {
+  /* ---- First screen built for screenshots: question, both answers and the buttons in one view. ---- */
+  .page {
+    max-width: 1080px;
+  }
+
+  .masthead {
+    flex-wrap: nowrap;
+    padding-inline: max(16px, calc(50% - 524px));
+    .link,
+    .brand-name {
+      white-space: nowrap;
+    }
+    @media (width < 520px) {
+      gap: 12px;
+      .brand-name {
+        font-size: 16px;
+      }
+      /* Themes can also be switched from "What is this", so the bar keeps to one line. */
+      .skin-picker {
+        display: none;
+      }
+      .tools {
+        gap: 12px;
+      }
+      .tools .link {
+        font-size: 13px;
+      }
+    }
+  }
+
+  .hero {
+    align-items: center;
+    margin: 20px 0 16px;
+    h1 {
+      margin-top: 4px;
+      font-size: clamp(22px, 2.8vw, 30px);
+    }
+    @media (width < 680px) {
+      margin: 14px 0 12px;
+      .kicker,
+      .hero-body {
+        display: none;
+      }
+    }
+  }
+
+  .hero-body {
+    max-width: 80ch;
+    margin-top: 6px;
+    font-size: 15px;
+    @media (height < 800px) {
+      display: none;
+    }
+  }
+
+  .seal {
+    width: 72px;
+    margin: 4px;
+    .eye {
+      width: 42px;
+      height: 42px;
+    }
+  }
+
+  .sheet-main {
+    padding: clamp(14px, 2.4vw, 26px);
+  }
+
+  .prompt {
+    font-size: clamp(17px, 2vw, 21px);
+    line-height: 1.45;
+  }
+
+  .sheet-meta {
+    margin-top: 8px;
+  }
+
+  .choose {
+    margin: 16px 0 10px;
+    @media (width < 720px) {
+      display: none;
+    }
+  }
+
+  .options {
+    margin-top: 12px;
+    @media (width >= 720px) {
+      margin-top: 0;
+    }
+  }
+
+  .option {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    @media (width < 720px) {
+      padding: 12px;
+      .option-key {
+        display: none;
+      }
+    }
+  }
+
+  .answer {
+    font-size: 14.5px;
+    line-height: 1.55;
+    mask-image: none;
+    [data-clipped]:not([data-open]) > & {
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 3em), transparent);
+    }
+  }
+
+  .option-foot {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    .more {
+      flex: none;
+    }
+    .pick {
+      flex: 1;
+      min-height: 46px;
+    }
+  }
+
+  /* Until someone expands an answer, the question sheet takes exactly the rest of the screen and the
+     answers share whatever height is left. */
+  .screen[data-fit]:not(:has(.option[data-open])) {
+    display: flex;
+    flex-direction: column;
+    height: max(100dvh, 600px);
+    > .page {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      padding-bottom: 14px;
+    }
+    .sheet,
+    .sheet-main {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    .options {
+      flex: 1;
+      min-height: 0;
+      align-items: stretch;
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+      @media (width >= 720px) {
+        grid-template-rows: minmax(0, 1fr);
+      }
+    }
+    .option {
+      min-height: 0;
+    }
+    .answer {
+      max-height: none;
+      min-height: 0;
+    }
+  }
+}
+
+@layer components {
+  .skin-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    opacity: 0.85;
+    select {
+      padding: 3px 6px;
+      border: 1px solid color-mix(in oklab, var(--on-bar) 40%, transparent);
+      border-radius: 3px;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      option {
+        color: #161616;
+      }
+    }
+  }
+
+  .skin-banner {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 16 / 9;
+    border: 3px solid var(--ink);
+    background: #0d0d0d;
+    object-fit: cover;
+    justify-self: center;
+  }
+
+  .unlock {
+    display: grid;
+    gap: 16px 24px;
+    align-items: center;
+    margin: 28px 0 20px;
+    padding: 20px;
+    border: 3px solid var(--ink);
+    background: var(--surface);
+    @media (width >= 640px) {
+      grid-template-columns: 260px 1fr;
+    }
+    h2 {
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    p {
+      margin: 8px 0 16px;
+      color: var(--ink-2);
+    }
+  }
+}
+
+/* Hidden themes. Both are deliberately over the top; they ignore the OS dark mode on purpose. */
+@layer skins {
+  :root[data-skin] {
+    color-scheme: light;
+    --display: "Archivo Condensed", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+
+    .hero h1,
+    .file-title,
+    .panel h2,
+    .unlock h2,
+    .brand-name,
+    .pick,
+    .button {
+      font-family: var(--display);
+      font-weight: 900;
+      font-stretch: 68%;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+    .hero h1 {
+      font-size: clamp(30px, 4.2vw, 48px);
+      line-height: 0.95;
+      &:lang(zh) {
+        font-size: clamp(26px, 3.6vw, 40px);
+        line-height: 1.1;
+      }
+    }
+    /* Keep the poster loud but short: the question still has to fit on the first screen. */
+    .hero {
+      margin: 16px 0 14px;
+      padding: 14px 18px;
+      .skin-banner {
+        width: 180px;
+        height: 104px;
+        @media (width < 680px) {
+          display: none;
+        }
+      }
+    }
+    .brand-name {
+      font-size: 24px;
+      &::before {
+        content: "★ ";
+        color: var(--accent);
+      }
+    }
+    .sheet,
+    .unlock,
+    dialog {
+      border: 3px solid var(--ink);
+      border-radius: 0;
+      box-shadow: 8px 8px 0 var(--shadow-ink);
+    }
+    .option,
+    .button,
+    .option-key {
+      border-radius: 0;
+    }
+    .hero {
+      padding: 24px;
+      border: 3px solid var(--ink);
+      background: var(--surface);
+      box-shadow: 8px 8px 0 var(--shadow-ink);
+    }
+    .progress {
+      padding: 12px 14px;
+      border: 3px solid var(--ink);
+      background: var(--surface);
+    }
+    .pips li {
+      height: 10px;
+      border: 2px solid var(--ink);
+      background: var(--surface);
+    }
+    .split-bar {
+      height: 14px;
+      border: 2px solid var(--ink);
+    }
+    .eye {
+      .masthead &,
+      .band &,
+      .colophon & {
+        color: var(--accent);
+      }
+    }
+  }
+
+  /* Red Era: propaganda poster. Ray burst, red and gold, cream paper, heavy type. */
+  :root[data-skin="red"] {
+    --paper: #a30d22;
+    --surface: #f4e6c4;
+    --ink: #1a1210;
+    --ink-2: #4a3626;
+    --ink-3: #7c6248;
+    --line: #dcc596;
+    --line-strong: #b8975f;
+    --red: #c8102e;
+    --accent: #ffcf3f;
+    --bar: #b3001b;
+    --on-bar: #ffe9a8;
+    --shadow-ink: #1a1210;
+    --qwen: #c8102e;
+    --inkling: #2b4a86;
+
+    body {
+      background: repeating-conic-gradient(from -3deg at 50% -10%, #c8102e 0 6deg, #a30d22 6deg 12deg) fixed;
+    }
+    .masthead {
+      border-bottom: 6px solid var(--accent);
+    }
+    .colophon {
+      border-top: 6px solid var(--accent);
+      background: #5c0612;
+    }
+    .hero h1,
+    .file-title,
+    .unlock h2 {
+      color: var(--red);
+      text-shadow: 3px 3px 0 var(--accent);
+    }
+    .band {
+      background: var(--red);
+      color: var(--accent);
+    }
+    .button.primary,
+    .pick {
+      border-color: var(--ink);
+      background: var(--red);
+      color: var(--accent);
+      box-shadow: 0 3px 0 var(--ink);
+    }
+    .pips li[data-current] {
+      background: var(--accent);
+    }
+  }
+
+  /* Maximum Freedom: Stars and Stripes wall to wall, navy, red, white, eagles. */
+  :root[data-skin="freedom"] {
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --ink: #0a1f44;
+    --ink-2: #2b3c5e;
+    --ink-3: #5b6a86;
+    --line: #d5dbe7;
+    --line-strong: #9aa7c0;
+    --red: #b31942;
+    --accent: #ffffff;
+    --bar: #0a3161;
+    --on-bar: #ffffff;
+    --shadow-ink: #b31942;
+    --qwen: #b07d1a;
+    --inkling: #0a3161;
+
+    body {
+      background: repeating-linear-gradient(#b31942 0 32px, #fff 32px 64px) fixed;
+    }
+    /* The blue canton, starred, pinned to the top left like the real thing. */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: min(46vw, 560px);
+      height: 448px;
+      background:
+        radial-gradient(#fff 2px, transparent 2.6px) 0 0 / 28px 28px,
+        radial-gradient(#fff 2px, transparent 2.6px) 14px 14px / 28px 28px,
+        #0a3161;
+    }
+    .masthead {
+      background:
+        radial-gradient(#fff 1.4px, transparent 2px) 0 0 / 20px 20px,
+        var(--bar);
+      border-bottom: 6px solid var(--red);
+      .brand-name,
+      .tools {
+        padding: 2px 10px;
+        background: var(--bar);
+      }
+    }
+    .colophon {
+      background:
+        radial-gradient(#fff 1.4px, transparent 2px) 0 0 / 20px 20px,
+        var(--bar);
+      border-top: 6px solid var(--red);
+    }
+    .hero h1,
+    .file-title,
+    .unlock h2 {
+      color: var(--ink);
+      text-shadow: 3px 3px 0 var(--red);
+    }
+    .band {
+      background: var(--bar);
+    }
+    .button.primary,
+    .pick {
+      border-color: var(--ink);
+      background: var(--red);
+      color: #fff;
+      box-shadow: 0 3px 0 var(--ink);
+    }
+  }
+}
+
+@layer motion {
+  @media (prefers-reduced-motion: no-preference) {
+    .eye-ball {
+      transform-origin: 16px 16px;
+      animation: blink 7s infinite;
+    }
+    .eye-iris {
+      transition: translate 180ms var(--ease-out);
+    }
+
+    dialog {
+      transition:
+        opacity 200ms var(--ease-out),
+        translate 240ms var(--ease-out),
+        overlay 240ms allow-discrete,
+        display 240ms allow-discrete;
+      opacity: 0;
+      translate: 0 12px;
+      &[open] {
+        opacity: 1;
+        translate: 0 0;
+        @starting-style {
+          opacity: 0;
+          translate: 0 12px;
+        }
+      }
+      &::backdrop {
+        transition:
+          background-color 200ms,
+          overlay 240ms allow-discrete,
+          display 240ms allow-discrete;
+      }
+      &[open]::backdrop {
+        @starting-style {
+          background-color: transparent;
+        }
+      }
+    }
+
+    .notice[open] {
+      .stamp {
+        animation: stamp 240ms cubic-bezier(0.5, 0, 0.75, 0) 300ms backwards;
+      }
+      form {
+        animation: thud 160ms ease-out 444ms;
+      }
+    }
+
+    ::view-transition-old(sheet) {
+      animation: sheet-out 200ms ease-in both;
+    }
+    ::view-transition-new(sheet) {
+      animation: sheet-in 300ms var(--ease-out) both;
+    }
+  }
+
+  @keyframes blink {
+    0%,
+    94%,
+    100% {
+      scale: 1 1;
+    }
+    96% {
+      scale: 1 0.08;
+    }
+  }
+
+  @keyframes stamp {
+    0% {
+      opacity: 0;
+      scale: 1.8;
+      rotate: -14deg;
+    }
+    60% {
+      opacity: 1;
+      scale: 0.97;
+      rotate: -8deg;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+
+  @keyframes thud {
+    40% {
+      translate: 0 2px;
+    }
+  }
+
+  @keyframes sheet-out {
+    to {
+      opacity: 0;
+      translate: -32px 0;
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      translate: 32px 0;
+    }
+  }
+}

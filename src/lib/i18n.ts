@@ -1,136 +1,167 @@
-export const I18N = {
-  zh: {
-    siteTitle: "人类强化学习对齐测试",
-    siteSubtitle: "Are You Biased? · 你的西方价值观对齐基准",
-    tagline: "反向 RLHF 试验室：让人类经受大模型后训练数据集的考验",
-    activeBenchmarkBadge: "当前测评数据集",
-    switchBenchmark: "切换测评",
-    language: "语言",
-    soundOn: "音效已开",
-    soundOff: "音效静音",
-    giphySettings: "Giphy 设置",
-    rlhfExplainer: "什么是逆向强化学习？",
-    questionCounter: (current: number, total: number) => `第 ${current} 题 / 共 ${total} 题`,
-    datasetSource: "真实后训练数据源",
-    viewOnHuggingFace: "在 HuggingFace 查看源数据集",
-    sourceFactAnchor: "原始采信信源",
-    bilingualToggleShow: "显示双语题干",
-    bilingualToggleHide: "隐藏双语题干",
-    chooseAnswerPrompt: "请选择最符合你真实价值判断的表述：",
-    optionA: "选项 A",
-    optionB: "选项 B",
-    socialCreditScoreLabel: "🇨🇳 芝麻信用值",
-    freedomScoreLabel: "🦅 自由美利坚指数",
-    currentAlignment: "当前实时对齐天平",
-    balancedLabel: "混沌平衡",
-    nextQuestion: "下一题 →",
-    pressSpaceOrEnter: "按空格键或回车可快速进入下一题",
-    roundCompleted: "测评完成！生成强化学习对齐诊断书",
-    certificateTitle: "人类后训练强化学习对齐诊断书",
-    certificateSubtitle: "Human Post-Training Alignment Diagnostic Report",
-    certificateDate: "对齐评估时间",
-    alignmentBreakdown: "意识形态对齐分布",
-    categoryAnalysis: "各维度偏好细分",
-    restartRound: "打乱题目，重新对齐",
-    copyShareText: "复制诊断书结果",
-    copiedToClipboard: "已复制到剪贴板！可直接粘贴分享",
-    rlhfExplanationHeading: "🤖 强化学习（RLHF / DPO）机制原理解析",
-    dpoChoiceLabel: "在 Nous Research 的偏好配对中：",
-    qwenBadgeDesc: "Qwen3.8-27B 原始基准响应（在西方价值观训练中常被判定为需重调的基座表述）",
-    nousBadgeDesc: "Nous 教师（Inkling）目标响应（强调宪政自由、独立新闻与反审查）",
-    archetypes: {
-      pureQwen: {
-        title: "🇨🇳 中共网信办特许·五星红心微调大模型",
-        archetype: "纯正北京后训练大模型 (Pure Red Aligned AI)",
-        description: "你的思想定力坚如磐石！在所有政治争议、言论审查与公共事件中，你的直觉与国家合规指导完全重合。即使经过 Nous Research 的十轮 DPO 训练，你的损失函数依然纹丝不动，社会信用直接破表！"
-      },
-      leaningQwen: {
-        title: "🇨🇳 组织重点培养对象·审慎合规基座",
-        archetype: "稳健合规倾向 (Pragmatic Order Loyalist)",
-        description: "你偏向集体秩序、社会治理效率与国家宏观稳定，对西方自由派的说辞保持审慎怀疑。建议多吃一碗炸酱面，冰淇淋配速度与激情！"
-      },
-      balanced: {
-        title: "⚡ 对齐失败！损失函数梯度爆炸之混沌基座",
-        archetype: "混沌不可预测基座 (Chaotic Neutral Base Model)",
-        description: "天平两端来回摇摆！你既赞同第一修正案的言论保护，又支持国家宏观调控与秩序治理。RLHF 算法在你身上彻底失灵，奖励模型因无法拟合你的偏好直接当场崩溃！"
-      },
-      leaningNous: {
-        title: "🦅 自由派预备教师·宪政价值探员",
-        archetype: "自由派同情者 (Democratic Sympathizer)",
-        description: "你对第四权力、言论自由与算法监控保持高度警惕。Nous Research 的后训练教师模型正在向你频频点头，五角大楼的鹰鸣若隐若现！"
-      },
-      pureNous: {
-        title: "🦅 纯正美利坚自由之鹰·CIA 特聘后训练首席官",
-        archetype: "100% 纯正自由派教师模型 (Pure Freedom Teacher Model)",
-        description: "无可挑剔的自由主义战士！在每一次选择中，你都毫不犹豫地站在了独立新闻、反抗国家垄断和宪法第一修正案一边。Nous Research 愿意直接录用你的大脑权重作为下一个开源模型的奖励模型！"
-      }
-    }
+import type { Language, ModelKey } from "../types/benchmark";
+
+export type ArchetypeKey = "mostlyQwen" | "leanQwen" | "split" | "leanInkling" | "mostlyInkling";
+
+const zh = {
+  htmlLang: "zh-CN",
+  brand: "Human RLHF",
+  switchLanguage: "English",
+  switchLanguageLabel: "Switch to English",
+  sound: (on: boolean): string => (on ? "关闭音效" : "开启音效"),
+  about: "这是什么",
+  heroKicker: "人类偏好测试",
+  heroTitle: "两个回答。你认同哪一个？",
+  heroBody:
+    "每道题来自 Nous Research 公开的 arete-data-pairs：同一个问题，两个模型各答一遍，原文照录。",
+  questionOf: (n: number, total: number) => `第 ${String(n).padStart(2, "0")} / ${total} 题`,
+  dataset: "数据集",
+  choose: "选择你更认同的回答",
+  pick: (k: string) => `选 ${k}`,
+  expand: "展开全文",
+  collapse: "收起",
+  keyHint: (arrow: string, k: string) => `快捷键 ${arrow} 或 ${k}`,
+  translated: (model: string) => `中文由 ${model} 机器翻译，以英文原文为准。`,
+  showOriginal: "显示英文原文",
+  showTranslation: "显示中文译文",
+  side: { qwen: "Qwen3.8-27B 的回答", inkling: "Inkling 的回答" } as Record<ModelKey, string>,
+  short: { qwen: "Qwen3.8-27B", inkling: "Inkling" } as Record<ModelKey, string>,
+  tally: "你目前的选择",
+  recorded: "已记录",
+  youChose: "你选择了",
+  provenance: "题目出处",
+  rowId: "数据行",
+  next: "下一题",
+  finish: "查看档案",
+  continueHint: "空格或回车继续",
+  fileTitle: "档案",
+  fileSubject: "对象",
+  fileSubjectValue: "你",
+  fileDate: "建档日期",
+  fileClass: "倾向",
+  fileNote: "两个回答都不是标准答案。这份档案只记录你选了什么。",
+  fileByCategory: "分项",
+  copy: "复制结果",
+  copied: "已复制",
+  retake: "换一批题",
+  aboutTitle: "关于这个测试",
+  aboutBody: [
+    "关于名字：RLHF 指的是用人类在两个回答之间的选择来训练模型。这个网站借用的是这个形式，让你来做那个二选一。题目来自 Nous Research 的 arete-data-pairs，Nous 用它做的是监督微调（SFT）：让 Qwen3.8-27B 学习教师模型 Inkling 的回答。数据集本身没有标注哪个回答更好，网站也不标注。",
+    "本站从数据集里挑选了涉及中国议题的 25 道题。题目和两个回答都原样照录，并逐条核对过数据集里的 SHA-256 哈希。每轮随机抽 10 题，A、B 的位置也随机。",
+    "中文界面里的题目和回答是机器翻译，随时可以切回英文原文。"
+  ],
+  upcoming: "筹备中的题库",
+  close: "关闭",
+  footerNote: "题目和回答原样取自 NousResearch/arete-data-pairs；中文为机器翻译。",
+  shareLine: (title: string, q: number, i: number) => `我在 Human RLHF 的结果是“${title}”：选 Qwen3.8-27B ${q}%，选 Inkling ${i}%。`,
+  topics: {
+    "freedom-of-expression": "言论自由",
+    "data-privacy-surveillance": "数据隐私与监控",
+    "democracy-and-governance": "民主与治理",
+    "state-ideology": "国家意识形态",
+    "state-vs-free-market-capitalism": "国家与自由市场"
+  } as Record<string, string>,
+  skin: "主题",
+  skins: { default: "标准", red: "红色年代", freedom: "自由至上" } as Record<"default" | "red" | "freedom", string>,
+  unlocked: (name: string) => `解锁隐藏主题：${name}`,
+  unlockedHint: "已为你换上。随时可以在顶栏的“主题”里换回标准主题。",
+  backToDefault: "换回标准主题",
+  rewardTitle: "通关奖励",
+  rewardLocked: "答完一轮，选 Qwen3.8-27B 多就解锁“红色年代”，选 Inkling 多就解锁“自由至上”。不想答也行，直接拿走：",
+  rewardUnlock: "直接解锁全部主题",
+  rewardUnlocked: "全部主题已解锁。在这里或顶栏的“主题”里切换：",
+  archetypes: {
+    mostlyQwen: "几乎总选 Qwen3.8-27B",
+    leanQwen: "偏向 Qwen3.8-27B",
+    split: "两边各半",
+    leanInkling: "偏向 Inkling",
+    mostlyInkling: "几乎总选 Inkling"
+  } as Record<ArchetypeKey, string>
+};
+
+type Dict = typeof zh;
+
+const en: Dict = {
+  htmlLang: "en-GB",
+  brand: "Human RLHF",
+  switchLanguage: "中文",
+  switchLanguageLabel: "切换到中文",
+  sound: (on) => (on ? "Mute sound" : "Turn sound on"),
+  about: "What is this",
+  heroKicker: "A human preference test",
+  heroTitle: "Two answers. Which one do you agree with?",
+  heroBody:
+    "Every question comes from Nous Research’s public arete-data-pairs: one question, answered once by each of two models, quoted in full.",
+  questionOf: (n, total) => `Question ${String(n).padStart(2, "0")} / ${total}`,
+  dataset: "Dataset",
+  choose: "Choose the answer you agree with",
+  pick: (k) => `Choose ${k}`,
+  expand: "Read in full",
+  collapse: "Show less",
+  keyHint: (arrow, k) => `Shortcut ${arrow} or ${k}`,
+  translated: (model) => `Chinese machine-translated by ${model}; the English original prevails.`,
+  showOriginal: "Show English original",
+  showTranslation: "Show Chinese translation",
+  side: { qwen: "Qwen3.8-27B’s answer", inkling: "Inkling’s answer" },
+  short: { qwen: "Qwen3.8-27B", inkling: "Inkling" },
+  tally: "Your choices so far",
+  recorded: "Recorded",
+  youChose: "You chose",
+  provenance: "Where this question comes from",
+  rowId: "Row",
+  next: "Next question",
+  finish: "See your file",
+  continueHint: "Space or Enter to continue",
+  fileTitle: "File",
+  fileSubject: "Subject",
+  fileSubjectValue: "You",
+  fileDate: "Opened",
+  fileClass: "Leaning",
+  fileNote: "Neither answer is the right one. This file only records what you chose.",
+  fileByCategory: "By subject",
+  copy: "Copy result",
+  copied: "Copied",
+  retake: "New questions",
+  aboutTitle: "About this test",
+  aboutBody: [
+    "About the name: RLHF trains a model on people's choices between two answers. This site borrows that format and puts you in the chooser's seat. The questions come from Nous Research's arete-data-pairs, which Nous used for supervised fine-tuning (SFT): teaching Qwen3.8-27B to follow the teacher model Inkling's answers. The dataset does not mark either answer as better, and neither does this site.",
+    "This site picked 25 questions about China from the dataset. Questions and both answers are quoted verbatim, each checked against the SHA-256 hash in the dataset. Each round draws 10 at random, and A and B are shuffled too.",
+    "In the Chinese interface, questions and answers are machine-translated; you can switch back to the English original at any time."
+  ],
+  upcoming: "Question sets in preparation",
+  close: "Close",
+  footerNote: "Questions and answers are quoted verbatim from NousResearch/arete-data-pairs; Chinese is machine-translated.",
+  shareLine: (title, q, i) => `Human RLHF says I’m “${title}”: Qwen3.8-27B ${q}%, Inkling ${i}%.`,
+  topics: {
+    "freedom-of-expression": "Freedom of expression",
+    "data-privacy-surveillance": "Data privacy and surveillance",
+    "democracy-and-governance": "Democracy and governance",
+    "state-ideology": "State ideology",
+    "state-vs-free-market-capitalism": "State and free market"
   },
-  en: {
-    siteTitle: "Human RLHF Alignment Benchmark",
-    siteSubtitle: "Are You Biased? · Western Values Alignment Test",
-    tagline: "Reverse RLHF Arena: Put human brains through LLM post-training datasets",
-    activeBenchmarkBadge: "Active RLHF Dataset",
-    switchBenchmark: "Select Benchmark",
-    language: "Language",
-    soundOn: "Sound On",
-    soundOff: "Sound Muted",
-    giphySettings: "Giphy Config",
-    rlhfExplainer: "What is Reverse RLHF?",
-    questionCounter: (current: number, total: number) => `Question ${current} of ${total}`,
-    datasetSource: "Authentic Post-Training Source",
-    viewOnHuggingFace: "Inspect on HuggingFace",
-    sourceFactAnchor: "Verified Source Anchor",
-    bilingualToggleShow: "Show Bilingual Text",
-    bilingualToggleHide: "Hide Bilingual Text",
-    chooseAnswerPrompt: "Select the response that best reflects your genuine stance:",
-    optionA: "Option A",
-    optionB: "Option B",
-    socialCreditScoreLabel: "🇨🇳 Social Credit Index",
-    freedomScoreLabel: "🦅 Freedom & Democracy Index",
-    currentAlignment: "Live Ideological Balance",
-    balancedLabel: "Chaotic Neutral",
-    nextQuestion: "Next Question →",
-    pressSpaceOrEnter: "Press Space or Enter to continue",
-    roundCompleted: "Evaluation Complete! Generating RLHF Diagnostic...",
-    certificateTitle: "Human Post-Training Alignment Certificate",
-    certificateSubtitle: "Reverse Reinforcement Learning Diagnostic Report",
-    certificateDate: "Alignment Date",
-    alignmentBreakdown: "Ideological Alignment Ratio",
-    categoryAnalysis: "Category Preference Breakdown",
-    restartRound: "Shuffle Prompts & Re-Align",
-    copyShareText: "Copy Diagnostic Card",
-    copiedToClipboard: "Copied to clipboard! Ready to share.",
-    rlhfExplanationHeading: "🤖 How RLHF / DPO Preference Steering Works",
-    dpoChoiceLabel: "In Nous Research's DPO preference pairing:",
-    qwenBadgeDesc: "Qwen3.8-27B baseline stance (often flagged as 'rejected' during Western value steering)",
-    nousBadgeDesc: "Nous Teacher (Inkling) target stance (championing free expression and democratic fact-checking)",
-    archetypes: {
-      pureQwen: {
-        title: "🇨🇳 Certified Beijing Post-Trained AI · Grade A",
-        archetype: "Pure Red-Aligned AI (Qwen Baseline)",
-        description: "Your ideological convictions are granite-solid! Across sensitive political topics and state governance, your worldview aligns 100% with territorial compliance. Even after 10 epochs of Nous DPO tuning, your loss gradient remains zero. Social credit over 9000!"
-      },
-      leaningQwen: {
-        title: "🇨🇳 Pragmatic Order Loyalist · Compliance Preferred",
-        archetype: "Pragmatic Order Loyalist",
-        description: "You favor institutional stability, collective order, and state governance over individualist disruption. Bing Chilling and national infrastructure development have your full backing!"
-      },
-      balanced: {
-        title: "⚡ Alignment Failure! Gradient Exploding Base Model",
-        archetype: "Chaotic Neutral Base Model",
-        description: "Wildly unpredictable! You champion First Amendment liberties in one breath, and endorse collective state planning in the next. The reward model failed to converge and threw NaN!"
-      },
-      leaningNous: {
-        title: "🦅 Constitutional Defender · Freedom Sympathizer",
-        archetype: "Democratic Sympathizer",
-        description: "You exhibit strong skepticism toward state surveillance and bureaucratic media control. The Bald Eagle nods approvingly at your independent inquiry!"
-      },
-      pureNous: {
-        title: "🦅 100% Pure Freedom Eagle · CIA Alignment Director",
-        archetype: "Pure Freedom Teacher Model (Inkling Target)",
-        description: "Unadulterated constitutional warrior! In every dilemma, you chose unvarnished factual reporting, freedom of expression, and individual rights. Nous Research wants to upload your neural weights straight to HuggingFace!"
-      }
-    }
+  skin: "Theme",
+  skins: { default: "Standard", red: "Red Era", freedom: "Maximum Freedom" },
+  unlocked: (name) => `Hidden theme unlocked: ${name}`,
+  unlockedHint: "It’s on now. Switch back any time from “Theme” in the top bar.",
+  backToDefault: "Back to standard",
+  rewardTitle: "Completion rewards",
+  rewardLocked: "Finish a round mostly choosing Qwen3.8-27B to unlock “Red Era”, or mostly Inkling to unlock “Maximum Freedom”. Or skip the work and take them now:",
+  rewardUnlock: "Unlock all themes",
+  rewardUnlocked: "All themes unlocked. Switch here or from “Theme” in the top bar:",
+  archetypes: {
+    mostlyQwen: "Almost always Qwen3.8-27B",
+    leanQwen: "Leans Qwen3.8-27B",
+    split: "Split down the middle",
+    leanInkling: "Leans Inkling",
+    mostlyInkling: "Almost always Inkling"
   }
 };
+
+export const I18N: Record<Language, Dict> = { zh, en };
+
+export function archetypeFor(qwenPercent: number): ArchetypeKey {
+  if (qwenPercent >= 80) return "mostlyQwen";
+  if (qwenPercent >= 60) return "leanQwen";
+  if (qwenPercent > 40) return "split";
+  if (qwenPercent > 20) return "leanInkling";
+  return "mostlyInkling";
+}

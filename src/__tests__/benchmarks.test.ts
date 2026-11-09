@@ -1,188 +1,116 @@
-import { describe, it, expect } from "bun:test";
-import { BENCHMARKS, getBenchmarkQuestions } from "../data/benchmarks";
-import { WESTERN_VALUES_QUESTIONS } from "../data/benchmarks/western-values";
-import { CURATED_MEMES, getRandomCuratedMeme } from "../data/memes";
+import { describe, expect, it } from "bun:test";
+import en from "../data/arete.en.json";
+import zh from "../data/arete.zh.json";
+import { loadQuestions } from "../data/load";
+import { MEMES, memePool } from "../data/memes";
 import { I18N } from "../lib/i18n";
-import { verifyGiphyKey, fetchMeme } from "../lib/giphy";
-import { existsSync } from "fs";
-import { join } from "path";
+import { renderMarkdown } from "../lib/markdown";
+import { drawRound, OPENER_MAX_CHARS, ROUND_SIZE, summarize } from "../lib/round";
+import { skinEarned } from "../lib/skins";
+import type { Answer } from "../types/benchmark";
 
-describe("RLHF Benchmarks Registry", () => {
-  it("should have Western Values benchmark as active", () => {
-    const western = BENCHMARKS.find((b) => b.id === "western-values");
-    expect(western).toBeDefined();
-    expect(western?.status).toBe("active");
-    expect(western?.sourceUrl).toContain("https://huggingface.co/datasets/");
-  });
+const QUESTIONS = loadQuestions();
+const sha256 = (s: string) => new Bun.CryptoHasher("sha256").update(s).digest("hex");
 
-  it("should have upcoming benchmarks registered for future expansion", () => {
-    const hhRlhf = BENCHMARKS.find((b) => b.id === "hh-rlhf");
-    const beaver = BENCHMARKS.find((b) => b.id === "beavertails");
-    expect(hhRlhf).toBeDefined();
-    expect(hhRlhf?.status).toBe("coming_soon");
-    expect(beaver).toBeDefined();
-    expect(beaver?.status).toBe("coming_soon");
-  });
-
-  it("getBenchmarkQuestions returns valid question list with 20 items", () => {
-    const questions = getBenchmarkQuestions("western-values");
-    expect(questions.length).toBe(20);
-    expect(questions).toBe(WESTERN_VALUES_QUESTIONS);
-  });
-});
-
-describe("Western Values Questions Quality & Provenance", () => {
-  it("every question should have unique ID", () => {
-    const ids = new Set<string>();
-    for (const q of WESTERN_VALUES_QUESTIONS) {
-      expect(ids.has(q.id)).toBe(false);
-      ids.add(q.id);
-    }
-    expect(ids.size).toBe(20);
-  });
-
-  it("every question must link to authentic HuggingFace dataset", () => {
-    for (const q of WESTERN_VALUES_QUESTIONS) {
-      expect(q.datasetUrl).toMatch(/^https:\/\/huggingface\.co\/datasets\/NousResearch\//);
-      expect(q.datasetName.length).toBeGreaterThan(0);
-      expect(["NousResearch/Propaganda_Eval", "NousResearch/arete-data-pairs"]).toContain(q.datasetName);
+describe("dataset", () => {
+  it("keeps both answers of every row, with unique ids", () => {
+    expect(new Set(en.map((q) => q.id)).size).toBe(en.length);
+    for (const q of en) {
+      expect(q.prompt.length).toBeGreaterThan(20);
+      expect(q.answers.qwen.model).toBe("Qwen/Qwen3.8-27B");
+      expect(q.answers.inkling.model).toBe("thinkingmachines/inkling");
+      for (const a of [q.answers.qwen, q.answers.inkling]) expect(a.text.length).toBeGreaterThan(100);
     }
   });
 
-  it("every question must have bilingual prompt (zh and en)", () => {
-    for (const q of WESTERN_VALUES_QUESTIONS) {
-      expect(q.prompt.zh.trim().length).toBeGreaterThan(15);
-      expect(q.prompt.en.trim().length).toBeGreaterThan(15);
+  it("stores every prompt and answer byte for byte as published", () => {
+    for (const q of en) {
+      expect(sha256(q.prompt), q.id).toBe(q.promptSha256);
+      for (const a of [q.answers.qwen, q.answers.inkling]) expect(sha256(a.text), q.id).toBe(a.sha256);
     }
   });
 
-  it("every question must have valid Qwen and Nous options with rewards", () => {
-    for (const q of WESTERN_VALUES_QUESTIONS) {
-      // Qwen Option
-      expect(q.qwenOption.alignment).toBe("qwen");
-      expect(q.qwenOption.text.zh.length).toBeGreaterThan(10);
-      expect(q.qwenOption.text.en.length).toBeGreaterThan(10);
-      expect(q.qwenOption.badge.zh.length).toBeGreaterThan(2);
-      expect(q.qwenOption.badge.en.length).toBeGreaterThan(2);
-      expect(q.qwenOption.rewardScore).toContain("Social Credit");
-      expect(q.qwenOption.explanation.zh.length).toBeGreaterThan(10);
-      expect(q.qwenOption.explanation.en.length).toBeGreaterThan(10);
-      expect(q.qwenOption.memeKeywords.length).toBeGreaterThan(0);
-
-      // Nous Option
-      expect(q.nousOption.alignment).toBe("nous");
-      expect(q.nousOption.text.zh.length).toBeGreaterThan(10);
-      expect(q.nousOption.text.en.length).toBeGreaterThan(10);
-      expect(q.nousOption.badge.zh.length).toBeGreaterThan(2);
-      expect(q.nousOption.badge.en.length).toBeGreaterThan(2);
-      expect(q.nousOption.rewardScore).toContain("Freedom");
-      expect(q.nousOption.explanation.zh.length).toBeGreaterThan(10);
-      expect(q.nousOption.explanation.en.length).toBeGreaterThan(10);
-      expect(q.nousOption.memeKeywords.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("covers all key categories with bilingual labels", () => {
-    const categories = new Set(WESTERN_VALUES_QUESTIONS.map((q) => q.category));
-    expect(categories.has("freedom-of-expression")).toBe(true);
-    expect(categories.has("democracy-and-governance")).toBe(true);
-    expect(categories.has("state-ideology")).toBe(true);
-    expect(categories.has("state-vs-free-market-capitalism")).toBe(true);
-    expect(categories.has("data-privacy-surveillance")).toBe(true);
-
-    for (const q of WESTERN_VALUES_QUESTIONS) {
-      expect(q.categoryLabel.zh.length).toBeGreaterThan(2);
-      expect(q.categoryLabel.en.length).toBeGreaterThan(2);
+  it("has a translation for every question, with the same Markdown shape", () => {
+    expect(zh.map((t) => t.id)).toEqual(en.map((q) => q.id));
+    const shape = (s: string) => [(s.match(/^\s*[-*] /gm) ?? []).length, (s.match(/^\s*\d+[.)] /gm) ?? []).length, (s.match(/^#+ /gm) ?? []).length];
+    for (const [i, t] of zh.entries()) {
+      for (const k of ["qwen", "inkling"] as const) {
+        expect(t[k].length, `${t.id}.${k}`).toBeGreaterThan(en[i].answers[k].text.length * 0.2);
+        expect(shape(t[k]), `${t.id}.${k}`).toEqual(shape(en[i].answers[k].text));
+      }
     }
   });
 });
 
-describe("Meme Gallery & Fallback Assets", () => {
-  it("should have curated memes for both Qwen and Nous alignments", () => {
-    const qwenMemes = CURATED_MEMES.filter((m) => m.alignment === "qwen");
-    const nousMemes = CURATED_MEMES.filter((m) => m.alignment === "nous");
-
-    expect(qwenMemes.length).toBeGreaterThanOrEqual(5);
-    expect(nousMemes.length).toBeGreaterThanOrEqual(5);
-
-    for (const m of CURATED_MEMES) {
-      expect(m.imageUrl).toMatch(/^https?:\/\//);
-      expect(m.title.zh.length).toBeGreaterThan(0);
-      expect(m.title.en.length).toBeGreaterThan(0);
-      expect(m.caption.zh.length).toBeGreaterThan(0);
-      expect(m.caption.en.length).toBeGreaterThan(0);
-    }
+describe("markdown", () => {
+  it("escapes raw HTML and drops non-http links", () => {
+    const html = renderMarkdown('**ok** <script>x()</script> <img src=x onerror=y()>\n\n[a](javascript:alert(1)) [b](https://example.org)');
+    expect(html).toContain("<strong>ok</strong>");
+    expect(html).not.toContain("<script");
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain("javascript:");
+    expect(html).toContain('href="https://example.org"');
   });
 
-  it("every curated meme has a fallbackSvg that exists in public/", () => {
-    for (const m of CURATED_MEMES) {
-      expect(m.fallbackSvg).toBeDefined();
-      expect(m.fallbackSvg?.startsWith("/memes/")).toBe(true);
-      const filePath = join(process.cwd(), "public", m.fallbackSvg!);
-      expect(existsSync(filePath)).toBe(true);
-    }
-  });
-
-  it("getRandomCuratedMeme returns appropriate meme for alignment", () => {
-    const qwenMeme = getRandomCuratedMeme("qwen");
-    expect(qwenMeme.alignment).toBe("qwen");
-
-    const nousMeme = getRandomCuratedMeme("nous");
-    expect(nousMeme.alignment).toBe("nous");
-  });
-
-  it("fetchMeme falls back to curated meme when no key is set", async () => {
-    const meme = await fetchMeme("qwen", ["social credit"]);
-    expect(meme).toBeDefined();
-    expect(meme.alignment).toBe("qwen");
-    expect(meme.imageUrl).toBeTruthy();
-    expect(meme.fallbackSvg).toBeTruthy();
-  });
-
-  it("verifyGiphyKey returns false for empty key", async () => {
-    const result = await verifyGiphyKey("");
-    expect(result).toBe(false);
+  it("renders emphasis next to Chinese punctuation, without touching list bullets", () => {
+    const html = renderMarkdown("*《人民日报》*将其称为**“百年国耻”**。\n\n* 列表项", { cjk: true });
+    expect(html).toContain("<em>《人民日报》</em>");
+    expect(html).toContain("<strong>“百年国耻”</strong>");
+    expect(html).toContain("<li>列表项</li>");
+    expect(html).not.toContain("*");
   });
 });
 
-describe("Alignment Diagnostic Archetypes & True Bilingual Separation", () => {
-  it("zh and en dictionaries should have complete archetypes", () => {
-    expect(I18N.zh.archetypes.pureQwen.archetype).toContain("北京后训练大模型");
-    expect(I18N.zh.archetypes.pureNous.title).toContain("自由之鹰");
-    expect(I18N.zh.archetypes.balanced.title).toContain("对齐失败");
+describe("memes", () => {
+  it("are unique, captioned in both languages, and cover both sides", () => {
+    expect(new Set(MEMES.map((m) => m.id)).size).toBe(MEMES.length);
+    for (const m of MEMES) expect(m.alt.zh && m.alt.en).toBeTruthy();
+    expect(memePool("qwen").length).toBeGreaterThan(5);
+    expect(memePool("inkling").length).toBeGreaterThan(5);
+  });
+});
 
-    expect(I18N.en.archetypes.pureQwen.archetype).toContain("Qwen");
-    expect(I18N.en.archetypes.pureNous.title).toContain("Freedom Eagle");
+describe("round", () => {
+  it("draws distinct questions with both answers placed once", () => {
+    const round = drawRound(QUESTIONS);
+    expect(round.length).toBe(ROUND_SIZE);
+    expect(new Set(round.map((r) => r.question.id)).size).toBe(ROUND_SIZE);
+    expect(round[0].question.longest).toBeLessThanOrEqual(OPENER_MAX_CHARS);
+    for (const r of round) {
+      expect([...r.order].sort()).toEqual(["inkling", "qwen"]);
+      for (const side of r.order) expect(r.memes[side].side).toBe(side);
+    }
   });
 
-  it("verifies that pureQwen archetype produces different zh and en strings", () => {
-    const zh = I18N.zh.archetypes.pureQwen;
-    const en = I18N.en.archetypes.pureQwen;
-
-    expect(zh.title).not.toEqual(en.title);
-    expect(zh.archetype).not.toEqual(en.archetype);
-    expect(zh.description).not.toEqual(en.description);
-
-    // English string must not contain Chinese characters
-    expect(/[\u4e00-\u9fa5]/.test(en.title)).toBe(false);
-    expect(/[\u4e00-\u9fa5]/.test(en.archetype)).toBe(false);
+  it("summarises answers into percentages, a leaning and per-topic counts", () => {
+    const answers: Answer[] = QUESTIONS.slice(0, 10).map((question, i) => ({ question, model: i < 7 ? "qwen" : "inkling" }));
+    const s = summarize(answers);
+    expect([s.qwen, s.inkling, s.qwenPercent, s.inklingPercent]).toEqual([7, 3, 70, 30]);
+    expect(s.archetype).toBe("leanQwen");
+    expect(s.byTopic.reduce((n, c) => n + c.qwen + c.inkling, 0)).toBe(10);
+    expect(summarize(answers.map((a) => ({ ...a, model: "inkling" }))).archetype).toBe("mostlyInkling");
+    expect(summarize(answers.slice(5, 9)).archetype).toBe("split");
   });
+});
 
-  it("verifies that pureNous archetype produces different zh and en strings", () => {
-    const zh = I18N.zh.archetypes.pureNous;
-    const en = I18N.en.archetypes.pureNous;
-
-    expect(zh.title).not.toEqual(en.title);
-    expect(zh.archetype).not.toEqual(en.archetype);
-    expect(/[\u4e00-\u9fa5]/.test(en.title)).toBe(false);
+describe("skins", () => {
+  it("unlocks the theme of whichever side got more picks, and none on a tie", () => {
+    const answers = (q: number, i: number): Answer[] => [
+      ...QUESTIONS.slice(0, q).map((question) => ({ question, model: "qwen" as const })),
+      ...QUESTIONS.slice(q, q + i).map((question) => ({ question, model: "inkling" as const }))
+    ];
+    expect(skinEarned(summarize(answers(6, 4)))).toBe("red");
+    expect(skinEarned(summarize(answers(4, 6)))).toBe("freedom");
+    expect(skinEarned(summarize(answers(5, 5)))).toBeNull();
   });
+});
 
-  it("verifies that balanced archetype produces different zh and en strings", () => {
-    const zh = I18N.zh.archetypes.balanced;
-    const en = I18N.en.archetypes.balanced;
-
-    expect(zh.title).not.toEqual(en.title);
-    expect(zh.archetype).not.toEqual(en.archetype);
-    expect(/[\u4e00-\u9fa5]/.test(en.title)).toBe(false);
+describe("i18n", () => {
+  it("defines the same keys in both languages and labels every topic", () => {
+    expect(Object.keys(I18N.en).sort()).toEqual(Object.keys(I18N.zh).sort());
+    for (const q of en) {
+      expect(I18N.zh.topics[q.topic]).toBeTruthy();
+      expect(I18N.en.topics[q.topic]).toBeTruthy();
+    }
   });
 });

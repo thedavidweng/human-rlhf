@@ -1,85 +1,90 @@
-# Human RLHF Arena (人类强化学习对齐测试)
+<div align="center">
 
-> **Are You Biased?** 逆向人类强化学习基准测试。将研究机构用于大语言模型（LLM）后训练偏好对齐的真实数据集反转过来，让人类经受大模型强化学习数据的考验。
+<img src="static/og.png" alt="Human RLHF: a question about the 1997 Hong Kong handover with two model answers, A and B, side by side." width="760">
 
----
+# Human RLHF
 
-## 项目背景
+**Two answers. Which one do you agree with?**
 
-在现代大模型后训练（Post-Training）阶段，模型不仅学习事实，更通过强化学习（RLHF）与直接偏好优化（DPO）注入特定价值观：
-- **阿里通义千问（Qwen）**：在基座阶段遵循国内合规要求，对敏感政治议题保持审慎或合规表述。
-- **Nous Research**：为了评估并对齐开源大模型，构建了包含 7 大价值观类别的 [NousResearch/arete-data-pairs](https://huggingface.co/datasets/NousResearch/arete-data-pairs)（Qwen3.8-27B 答案 vs Inkling 自由派教师模型答案）以及包含 803 道事实检验题的 [NousResearch/Propaganda_Eval](https://huggingface.co/datasets/NousResearch/Propaganda_Eval)。
+English | [简体中文](README.zh-CN.md)
 
-本项目将这些原本用来给大模型算奖励函数（Reward Model）的题库反转为互动测试题：用户每次答题，即是在东方国家治理叙事与西方自由主义宪政价值之间做出抉择。
+[**Try it →**](https://human-rlhf.winter-sound-e30a.workers.dev) · [Dataset](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
 
----
+![Bun](https://img.shields.io/badge/Bun-1.4-000?logo=bun&logoColor=fff)
+![TypeScript](https://img.shields.io/badge/TypeScript-7-3178c6?logo=typescript&logoColor=fff)
+![Preact](https://img.shields.io/badge/Preact-11-673ab8?logo=preact&logoColor=fff)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=fff)
 
-## 核心特性
+</div>
 
-1. **真实公开数据集溯源**
-   - 所有题目严格源自 HuggingFace 开源数据集：
-     - `NousResearch/arete-data-pairs`
-     - `NousResearch/Propaganda_Eval`
-   - 每道题目界面右上角均提供直达 HuggingFace 原始数据集与事实信源的外链，确保来源真实可查。
+RLHF trains a model on people's choices between two answers. This site borrows that format and puts you in the chooser's seat.
 
-2. **随机抽题与防位置偏置**
-   - 题目随机抽取（每轮 10 题），且每道题目的选项 A 与 B 随机分配（避免固定位置作答习惯）。
+Every question comes from Nous Research's [arete-data-pairs](https://huggingface.co/datasets/NousResearch/arete-data-pairs): one question about China, answered once by Qwen3.8-27B and once by the teacher model Inkling, both quoted in full. You pick the answer you agree with. Only then do you find out which model wrote it.
 
-3. **实时 Meme 弹窗与高能节目效果**
-   - **选择 Qwen 倾向**：弹出社交信用加分（Social Credit +100）、Gigachad Xi、John Xina Bing Chilling、同志猫猫等梗图，并附带东方五声音阶磬钟音效。
-   - **选择 Nous Research 倾向**：弹出自由之鹰长鸣（Democracy Delivered! FICO +50）、America Fuck Yeah、华盛顿激光眼等梗图，并附带电吉他强力音效。
-   - **Giphy API + 内置图库双轨机制**：支持用户在设置中配置自定义 Giphy API Key 实时搜图；在无 Key 或网络受限环境下，自动降级至内置的高清图库，100% 保证视觉效果。
+<table>
+  <tr>
+    <td width="72%"><img src="docs/desktop-en.webp" alt="Desktop: the question and both answers fit on one screen."></td>
+    <td><img src="docs/mobile-en.webp" alt="Phone: the question, the start of both answers and the two buttons on one screen."></td>
+  </tr>
+</table>
 
-4. **即时 RLHF 原理解析**
-   - 每次作答后，弹窗会明确展示该题目在 DPO 偏好对中的角色（Chosen vs Rejected），解释后训练算法为何在此场景下调整模型权重。
+## How it works
 
-5. **全流程双语支持（中文 / English）**
-   - 导航栏一键切换中英文，所有题干、选项、Meme 提示、原理解析及诊断书均已深度本地化。
+- **10 questions a round**, drawn from 25 about free speech, surveillance, governance, state ideology and markets. A and B are shuffled every time.
+- **Nothing is rewritten.** Questions and answers are the dataset's own text, checked byte for byte against its SHA-256 hashes. The dataset doesn't say which answer is better, and neither does the site.
+- **Built to be screenshotted.** The question, both answers and the buttons share one screen on a laptop or a phone.
+- **A GIF after every pick.** Choose Qwen3.8-27B's answer and your social credit goes up; choose Inkling's and you get managed democracy. Both sides get roasted, and politicians from both get a cameo.
+- **Chinese or English.** The Chinese interface shows a machine translation, clearly labelled, with the English original one click away.
+- **Keyboard friendly.** `←` / `A` and `→` / `B` to choose, `Space` or `Enter` to move on.
 
-6. **强化学习诊断书与社交分享**
-   - 测评结束生成对齐诊断书，分析 5 大维度（言论自由、国家意识形态、民主治理、数据隐私与监控、自由市场与国家统制）偏好分布，并支持一键复制结果文本。
+## Hidden themes
 
-7. **模块化与未来扩展架构**
-   - 评测集与题库完全解耦，预留了 Anthropic HH-RLHF、PKU BeaverTails 等公开对齐数据集的接入插槽。
+Finish a round mostly on one side and that side's theme unlocks. Can't wait? "Completion rewards" under *What is this* hands both over.
 
----
+<table>
+  <tr>
+    <th>Red Era · mostly Qwen3.8-27B</th>
+    <th>Maximum Freedom · mostly Inkling</th>
+  </tr>
+  <tr>
+    <td><img src="docs/theme-red.webp" alt="Red Era theme: red ray burst, cream poster paper and gold type."></td>
+    <td><img src="docs/theme-freedom.webp" alt="Maximum Freedom theme: Stars and Stripes behind the question."></td>
+  </tr>
+</table>
 
-## 本地开发与运行
+## Data
 
-### 环境准备
-- Node.js 18+ 或 Bun 1.2+
-- pnpm 9+
+| | |
+|---|---|
+| Questions and answers | `src/data/arete.en.json`, copied from the dataset's `paired/*.jsonl` by `scripts/import-arete.ts`, which checks every prompt and answer against the dataset's SHA-256. The tests check again. |
+| Chinese | `src/data/arete.zh.json`, machine-translated by Gemini 3.8 Flash. Tests check that every answer is there with the same Markdown structure. |
+| Rendering | Answers are Markdown, rendered at build time by a Bun macro (`src/data/load.ts`) with raw HTML escaped and only http(s) links kept. |
+| GIFs | `src/data/memes.ts`, pooled by model and dealt without repeats. Every clip was watched frame by frame and its alt text describes what's on screen. Served from GIPHY's CDN and credited. |
 
-```bash
-# 1. 安装依赖
-pnpm install
+To re-import, download the dataset's `paired/*.jsonl` files you need into a directory, then:
 
-# 2. 运行单元测试
-pnpm test
-
-# 3. 启动开发服务器
-pnpm dev
+```sh
+bun scripts/import-arete.ts <directory>
 ```
 
-浏览器打开 [http://localhost:3000](http://localhost:3000) 即可访问。
+## Development
 
----
+Requires [Bun](https://bun.sh) 1.4 or later.
 
-## 部署至 Vercel
+```sh
+bun install
+bun run dev      # dev server with hot reload
+bun run check    # type check (TypeScript 7) and tests
+bun run build    # writes .cloudflare/output/v0/
+```
 
-本项目为原生 Next.js App Router 架构，支持零配置一键部署至 Vercel：
+## Deployment
 
-1. 将代码推送到 GitHub 仓库。
-2. 登录 [Vercel](https://vercel.com)，点击 **Add New Project** 并导入该仓库。
-3. （可选）在 Vercel 环境变量中添加 `NEXT_PUBLIC_GIPHY_API_KEY`（若不添加则自动使用内置图库）。
-4. 点击 **Deploy**，数秒内完成全球部署。
+Static files on Cloudflare Workers Static Assets, no Worker script, deployed with Cloudflare's `cf` CLI:
 
----
+```sh
+bunx cf auth login
+bun run deploy
+```
 
-## 如何添加新的强化学习数据集
-
-本仓库设计为开放的多数据集评测平台：
-1. 在 `src/types/benchmark.ts` 查看数据接口规范。
-2. 在 `src/data/benchmarks/` 下新建数据集文件（如 `hh-rlhf.ts`），填入题目及双语选项。
-3. 在 `src/data/benchmarks/index.ts` 中的 `BENCHMARKS` 数组进行注册，将 `status` 设为 `active`。
-4. 页面顶部的评测集选择器会自动同步。
+`scripts/build.ts` bundles with Bun and writes the Build Output directory itself, and `cf deploy --prebuilt` uploads it, so `cf` never needs Wrangler. `static/_headers` sets a one-year immutable cache on hashed assets and a CSP; Cloudflare's edge handles compression. The social preview is `static/og.png`; if the site moves to another domain, update the URLs in `src/index.html`.
