@@ -1,7 +1,7 @@
 # Human RLHF
 
 - Bun only: `bun install`, `bun run dev`, `bun run check`, `bun run build`.
-- Static site on Cloudflare Workers Static Assets, deployed with the `cf` CLI (`cf deploy --prebuilt`). Never use or install Wrangler. `scripts/build.ts` writes the Build Output tree; `static/_headers` sets caching and CSP.
+- Static site on Cloudflare Pages (`humanrlhf.pages.dev`), built by Pages' GitHub integration on every push to `main` (`bun install --frozen-lockfile && bun run build`, output `dist/`). Manage the project with the `cf` CLI. Never use or install Wrangler. `static/_headers` sets caching and CSP.
 - Preact + hand-written CSS in `src/styles.css`. No Tailwind, no UI library.
 - Questions and answers are verbatim rows of NousResearch/arete-data-pairs (`scripts/import-arete.ts`, hash-checked). Never rewrite or summarise them; only the A/B order is shuffled. Never label either answer as better or preferred; name the model instead.
 - Chinese text is machine translation and must say so on the page, with the English original one click away.

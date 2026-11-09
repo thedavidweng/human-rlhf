@@ -8,12 +8,12 @@
 
 [English](README.md) | 简体中文
 
-[**马上试试 →**](https://human-rlhf.davidweng.workers.dev) · [数据集](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
+[**马上试试 →**](https://humanrlhf.pages.dev) · [数据集](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
 
 ![Bun](https://img.shields.io/badge/Bun-1.4-000?logo=bun&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178c6?logo=typescript&logoColor=fff)
 ![Preact](https://img.shields.io/badge/Preact-11-673ab8?logo=preact&logoColor=fff)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=fff)
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-f38020?logo=cloudflare&logoColor=fff)
 
 </div>
 
@@ -75,16 +75,18 @@ bun scripts/import-arete.ts <目录>
 bun install
 bun run dev      # 本地开发，带热更新
 bun run check    # 类型检查（TypeScript 7）+ 测试
-bun run build    # 输出到 .cloudflare/output/v0/
+bun run build    # 输出到 dist/
 ```
 
 ## 部署
 
-纯静态文件，部署到 Cloudflare Workers Static Assets，没有 Worker 脚本，用 Cloudflare 的 `cf` CLI：
+纯静态文件，托管在 Cloudflare Pages：[humanrlhf.pages.dev](https://humanrlhf.pages.dev)。Pages 已关联这个 GitHub 仓库，每次推送到 `main`，Cloudflare 会运行 `bun install --frozen-lockfile && bun run build`，然后发布 `dist/`。`main` 以外的分支不生成预览部署。
+
+项目是用 Cloudflare 的 `cf` CLI 创建的，也可以用它手动重新部署当前的 `main`：
 
 ```sh
 bunx cf auth login
-bun run deploy
+bunx cf pages deployments create humanrlhf
 ```
 
-`scripts/build.ts` 用 Bun 打包，直接写出 Build Output 目录，再由 `cf deploy --prebuilt` 上传，所以 `cf` 不需要 Wrangler。`static/_headers` 给带哈希的资源加一年不可变缓存，并设置 CSP；压缩交给 Cloudflare 边缘。社交预览图是 `static/og.png`；以后换域名的话，要同步更新 `src/index.html` 里的地址。
+`static/_headers` 给带哈希的资源加一年不可变缓存，并设置 CSP；压缩交给 Cloudflare 边缘。社交预览图是 `static/og.png`；以后换域名的话，要同步更新 `src/index.html` 里的地址。

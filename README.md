@@ -8,12 +8,12 @@
 
 English | [简体中文](README.zh-CN.md)
 
-[**Try it →**](https://human-rlhf.davidweng.workers.dev) · [Dataset](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
+[**Try it →**](https://humanrlhf.pages.dev) · [Dataset](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
 
 ![Bun](https://img.shields.io/badge/Bun-1.4-000?logo=bun&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178c6?logo=typescript&logoColor=fff)
 ![Preact](https://img.shields.io/badge/Preact-11-673ab8?logo=preact&logoColor=fff)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?logo=cloudflare&logoColor=fff)
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-f38020?logo=cloudflare&logoColor=fff)
 
 </div>
 
@@ -75,16 +75,18 @@ Requires [Bun](https://bun.sh) 1.4 or later.
 bun install
 bun run dev      # dev server with hot reload
 bun run check    # type check (TypeScript 7) and tests
-bun run build    # writes .cloudflare/output/v0/
+bun run build    # writes dist/
 ```
 
 ## Deployment
 
-Static files on Cloudflare Workers Static Assets, no Worker script, deployed with Cloudflare's `cf` CLI:
+Static files on Cloudflare Pages at [humanrlhf.pages.dev](https://humanrlhf.pages.dev). Pages is connected to this GitHub repo: every push to `main` runs `bun install --frozen-lockfile && bun run build` on Cloudflare and publishes `dist/`. Branches other than `main` get no preview deployments.
+
+The project was created with Cloudflare's `cf` CLI, which can also redeploy the current `main` by hand:
 
 ```sh
 bunx cf auth login
-bun run deploy
+bunx cf pages deployments create humanrlhf
 ```
 
-`scripts/build.ts` bundles with Bun and writes the Build Output directory itself, and `cf deploy --prebuilt` uploads it, so `cf` never needs Wrangler. `static/_headers` sets a one-year immutable cache on hashed assets and a CSP; Cloudflare's edge handles compression. The social preview is `static/og.png`; if the site moves to another domain, update the URLs in `src/index.html`.
+`static/_headers` sets a one-year immutable cache on hashed assets and a CSP; Cloudflare's edge handles compression. The social preview is `static/og.png`; if the site moves to another domain, update the URLs in `src/index.html`.
