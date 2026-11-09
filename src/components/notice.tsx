@@ -4,7 +4,6 @@ import { DATASET_URL } from "../data/source";
 import { I18N } from "../lib/i18n";
 import { playStamp } from "../lib/sound";
 import type { Language, ModelKey, Question } from "../types/benchmark";
-import { Eye } from "./eye";
 
 // Matches the CSS: the stamp lands 60% into a 240ms animation that starts after 300ms.
 const STAMP_DELAY_MS = 444;
@@ -37,14 +36,6 @@ export function NoticeDialog({ question, picked, meme, lang, last, onDone }: Pro
   return (
     <dialog ref={ref} class="notice" data-side={picked} aria-labelledby="notice-choice" onClose={onDone}>
       <form method="dialog">
-        <header class="band">
-          <span class="band-org">
-            <Eye size={22} />
-            {t.brand}
-          </span>
-          <span class="band-ref">No. {question.id}</span>
-        </header>
-
         <div class="notice-main">
           <div class="panel">
             <p>{t.youChose}</p>
@@ -59,7 +50,6 @@ export function NoticeDialog({ question, picked, meme, lang, last, onDone }: Pro
               </a>
             </figcaption>
             <div class="stamp" aria-hidden="true">
-              <Eye size={24} />
               <span>{t.recorded}</span>
               <small>{formatDate(lang)}</small>
             </div>

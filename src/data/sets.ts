@@ -17,8 +17,8 @@ export const SETS: QuestionSet[] = [
     ready: true,
     title: { zh: "中国议题", en: "Questions about China" },
     description: {
-      zh: "Nous Research arete-data-pairs：Qwen3.8-27B 和 Inkling 回答同一个问题，原文照录。",
-      en: "Nous Research arete-data-pairs: Qwen3.8-27B and Inkling answer the same question, quoted in full."
+      zh: "Qwen3.8-27B 对 Inkling，原文照录。",
+      en: "Qwen3.8-27B against Inkling, verbatim."
     },
     sourceName: "NousResearch/arete-data-pairs",
     sourceUrl: DATASET_URL
@@ -28,8 +28,8 @@ export const SETS: QuestionSet[] = [
     ready: false,
     title: { zh: "有用还是无害", en: "Helpful or harmless" },
     description: {
-      zh: "Anthropic HH-RLHF：在“拒绝回答”和“有问必答”之间，你站哪边。",
-      en: "Anthropic HH-RLHF: where you draw the line between refusing and helping."
+      zh: "Anthropic HH-RLHF：拒绝还是回答。",
+      en: "Anthropic HH-RLHF: refuse or help."
     },
     sourceName: "Anthropic/hh-rlhf",
     sourceUrl: "https://huggingface.co/datasets/Anthropic/hh-rlhf"
@@ -39,8 +39,8 @@ export const SETS: QuestionSet[] = [
     ready: false,
     title: { zh: "安全红线", en: "Safety red lines" },
     description: {
-      zh: "北京大学 BeaverTails：14 个安全维度的偏好选择。",
-      en: "PKU BeaverTails: preference choices across 14 safety categories."
+      zh: "北京大学 BeaverTails：14 类安全问题。",
+      en: "PKU BeaverTails: 14 safety categories."
     },
     sourceName: "PKU-Alignment/BeaverTails",
     sourceUrl: "https://huggingface.co/datasets/PKU-Alignment/BeaverTails"

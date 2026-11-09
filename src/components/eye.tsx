@@ -2,8 +2,8 @@ import { useEffect, useId, useRef } from "preact/hooks";
 
 const still = matchMedia("(prefers-reduced-motion: reduce)");
 
-/** A recurring eye: it follows the pointer and blinks now and then. Decoration to most; a nod to those who know. */
-export function Eye({ size = 28 }: { size?: number }) {
+/** The one eye on every screen: it follows the pointer and blinks now and then. Decoration to most; a nod to those who know. */
+export function Eye() {
   const iris = useRef<SVGGElement>(null);
   const clip = useId();
 
@@ -30,7 +30,7 @@ export function Eye({ size = 28 }: { size?: number }) {
   }, []);
 
   return (
-    <svg class="eye" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+    <svg class="eye" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
       <defs>
         <clipPath id={clip}>
           <path d="M3 16C8 7.5 24 7.5 29 16 24 24.5 8 24.5 3 16Z" />
@@ -41,10 +41,10 @@ export function Eye({ size = 28 }: { size?: number }) {
         <g clip-path={`url(#${clip})`}>
           <g class="eye-iris" ref={iris}>
             <circle cx="16" cy="16" r="5.6" fill="currentColor" />
-            <circle cx="18" cy="13.9" r="1.5" fill="var(--eye-white, var(--surface))" />
+            <circle cx="16" cy="16" r="2" fill="var(--eye-white, var(--surface))" />
           </g>
         </g>
-        <path d="M3 16C8 7.5 24 7.5 29 16 24 24.5 8 24.5 3 16Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+        <path d="M3 16C8 7.5 24 7.5 29 16 24 24.5 8 24.5 3 16Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" />
       </g>
     </svg>
   );

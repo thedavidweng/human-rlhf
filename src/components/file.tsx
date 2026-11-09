@@ -2,16 +2,15 @@ import { useState } from "preact/hooks";
 import { I18N } from "../lib/i18n";
 import type { Summary } from "../lib/round";
 import type { Language } from "../types/benchmark";
-import { Eye } from "./eye";
 import { formatDate } from "./notice";
 
-export function PersonnelFile({ summary, lang, onRetake }: { summary: Summary; lang: Language; onRetake: () => void }) {
+export function PersonnelFile({ summary, setTitle, lang, onRetake }: { summary: Summary; setTitle: string; lang: Language; onRetake: () => void }) {
   const t = I18N[lang];
   const [copied, setCopied] = useState(false);
   const leaning = t.archetypes[summary.archetype];
 
   const copy = async () => {
-    await navigator.clipboard.writeText(`${t.shareLine(leaning, summary.qwenPercent, summary.inklingPercent)}\n${location.origin}${location.pathname}`);
+    await navigator.clipboard.writeText(`${t.shareLine(summary.qwenPercent, summary.inklingPercent)}\n${location.origin}${location.pathname}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -19,21 +18,14 @@ export function PersonnelFile({ summary, lang, onRetake }: { summary: Summary; l
   return (
     <article class="file sheet">
       <header class="band">
-        <span class="band-org">
-          <Eye size={22} />
-          {t.brand}
-        </span>
-        <span class="band-ref">{formatDate(lang)}</span>
+        <span class="band-org">{setTitle}</span>
+        <span class="band-ref">{t.answered(summary.qwen + summary.inkling)}</span>
       </header>
 
       <div class="sheet-main">
         <h2 class="file-title">{t.fileTitle}</h2>
 
         <dl class="file-meta">
-          <div>
-            <dt>{t.fileSubject}</dt>
-            <dd>{t.fileSubjectValue}</dd>
-          </div>
           <div>
             <dt>{t.fileDate}</dt>
             <dd>{formatDate(lang)}</dd>

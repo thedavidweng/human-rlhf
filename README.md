@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="static/og.png" alt="Human RLHF title screen: the words Human RLHF, “Two answers. No names. Pick one.”, two answer slips with the model names blacked out under a Blind stamp, and the question sets." width="760">
+<img src="static/og.png" alt="Human RLHF title screen: the words Human RLHF, two answer slips with the model names blacked out under a Blind stamp, and the question sets." width="760">
 
 # Human RLHF
 
-**Two answers. No names. Pick one.**
+**Pick the answers you agree with, and find out if you're a biased human model.**
 
 English | [简体中文](README.zh-CN.md)
 
@@ -55,13 +55,13 @@ Finish a round mostly on one side and that side's theme unlocks. Unlocked themes
 
 ## Data
 
-|                       |                                                                                                                                                                                                                                    |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Questions and answers | `src/data/arete.en.json`, copied from the dataset's `paired/*.jsonl` by `scripts/import-arete.ts`, which checks every prompt and answer against the dataset's SHA-256. The tests check again.                                      |
-| Chinese               | `src/data/arete.zh.json`, machine-translated by Gemini 3.8 Flash. Tests check that every answer is there with the same Markdown structure.                                                                                         |
-| Rendering             | Answers are Markdown, rendered at build time by a Bun macro (`src/data/load.ts`) with raw HTML escaped and only http(s) links kept.                                                                                                |
-| Music                 | `src/data/music.ts`: “Access Denied!!!” by Figure, from Heavy Industries' _Maintenance EP_ (2004), CC BY-NC-ND 1.0. Streamed unmodified from the Internet Archive and credited in _What is this_; nothing is copied into the repo. |
-| GIFs                  | `src/data/memes.ts`, pooled by model and dealt without repeats. Every clip was watched frame by frame and its alt text describes what's on screen. Served from GIPHY's CDN and credited.                                           |
+|                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Questions and answers | `src/data/arete.en.json`, copied from the dataset's `paired/*.jsonl` by `scripts/import-arete.ts`, which checks every prompt and answer against the dataset's SHA-256. The tests check again.                                                                                                                                                                                                                                                          |
+| Chinese               | `src/data/arete.zh.json`, machine-translated by Gemini 3.8 Flash. Tests check that every answer is there with the same Markdown structure.                                                                                                                                                                                                                                                                                                             |
+| Rendering             | Answers are Markdown, rendered at build time by a Bun macro (`src/data/load.ts`) with raw HTML escaped and only http(s) links kept.                                                                                                                                                                                                                                                                                                                    |
+| Music                 | `src/data/music.ts`, one track per theme, streamed unmodified from the Internet Archive and credited in _About_; nothing is copied into the repo. Standard: “Access Denied!!!” by Figure, from Heavy Industries' _Maintenance EP_ (2004), CC BY-NC-ND 1.0. Red Era: 屠洪刚, “天上太阳红彤彤” (1996). Maximum Freedom: Team America, “America, Fuck Yeah” (2004). The last two are copyrighted and come from unofficial uploads, so they may disappear. |
+| GIFs                  | `src/data/memes.ts`, pooled by model and dealt without repeats. Every clip was watched frame by frame and its alt text describes what's on screen. Served from GIPHY's CDN and credited.                                                                                                                                                                                                                                                               |
 
 To re-import, download the dataset's `paired/*.jsonl` files you need into a directory, then:
 

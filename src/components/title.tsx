@@ -5,7 +5,6 @@ import { I18N } from "../lib/i18n";
 import { ROUND_SIZE } from "../lib/round";
 import { loadDisplayFont } from "../lib/skins";
 import type { Language } from "../types/benchmark";
-import { Eye } from "./eye";
 
 /** Placeholder text lines on the two answer slips: [width, redacted]. */
 const SLIP_LINES: Record<"A" | "B", [string, boolean][]> = {
@@ -39,29 +38,20 @@ export function TitleScreen({ lang, onStart }: { lang: Language; onStart: (set: 
   return (
     <main class="title">
       <div class="title-copy">
-        <p class="kicker">{t.titleKicker}</p>
         <h1 class="wordmark" lang="en">
           <span>Human</span> <span>RLHF</span>
         </h1>
         <p class="title-gloss">{t.titleGloss}</p>
         <p class="title-lede">{t.titleLede}</p>
-        <p class="title-body">{t.titleBody}</p>
-        <div class="title-start">
-          <p class="insert" aria-hidden="true">
-            <span class="caret">▶</span> {t.insertHuman}
-          </p>
-          <button class="button start" onClick={() => onStart(first)}>
-            {t.start} <span aria-hidden="true">→</span>
-          </button>
-          <span class="hint">{t.startHint}</span>
-        </div>
+        <button class="button start" onClick={() => onStart(first)} aria-keyshortcuts="Enter">
+          {t.start} <span aria-hidden="true">→</span>
+        </button>
       </div>
 
       <div class="slips" aria-hidden="true">
         {(["A", "B"] as const).map((k) => (
           <div class="slip" data-slip={k} key={k}>
             <header class="band">
-              <span>{t.answerLabel(k)}</span>
               <span class="slip-model">
                 {t.modelLabel} <i class="redact" />
               </span>
@@ -72,18 +62,12 @@ export function TitleScreen({ lang, onStart }: { lang: Language; onStart: (set: 
               ))}
             </div>
             <div class="slip-foot">
-              <span class="option-key">{k}</span>
               <span class="slip-pick">{t.pick(k)}</span>
             </div>
           </div>
         ))}
-        <div class="title-seal">
-          <Eye size={64} />
-        </div>
         <div class="stamp title-stamp">
-          <Eye size={24} />
           <span>{t.blind}</span>
-          <small>{t.blindNote}</small>
         </div>
       </div>
 

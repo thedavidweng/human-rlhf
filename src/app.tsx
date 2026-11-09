@@ -12,7 +12,7 @@ import { SETS, type QuestionSet } from "./data/sets";
 import { I18N } from "./lib/i18n";
 import { drawRound, summarize, type RoundItem } from "./lib/round";
 import { loadDisplayFont, readActive, readUnlocked, save, skinEarned, type Skin } from "./lib/skins";
-import { playChime, playKey, readSoundPreference, setSound, startMusic } from "./lib/sound";
+import { playChime, playKey, readSoundPreference, setSound, setTrack, startMusic } from "./lib/sound";
 import type { Answer, Language, ModelKey, Translation } from "./types/benchmark";
 
 const LANG_KEY = "human-rlhf:lang";
@@ -69,6 +69,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
   const [justUnlocked, setJustUnlocked] = useState<Exclude<Skin, "default"> | null>(null);
   const about = useRef<HTMLDialogElement>(null);
   const t = I18N[lang];
+  const track = MUSIC[skin];
 
   const index = picked ? answers.length - 1 : answers.length;
   const current: RoundItem | undefined = round[index];
@@ -93,6 +94,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
       document.documentElement.dataset.skin = skin;
       loadDisplayFont();
     }
+    setTrack(MUSIC[skin]);
     save(unlocked, skin);
   }, [skin, unlocked]);
 
@@ -181,7 +183,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
         <header class="masthead">
           <a class="brand" href="./" aria-label={t.brand}>
             <Eye />
-            <span class="brand-name">{t.brand}</span>
+            {set && <span class="brand-name">{t.brand}</span>}
           </a>
           <nav class="tools">
             <button class="link" onClick={() => about.current?.showModal()}>
@@ -201,27 +203,18 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
           <TitleScreen lang={lang} onStart={start} />
         ) : (
           <main class="page">
-            {answers.length === 0 && (
+            {/* The hidden themes open on their poster; the standard sheet goes straight to the question. */}
+            {answers.length === 0 && skin !== "default" && (
               <section class="hero">
-                <div class="hero-copy">
-                  <p class="kicker">{t.heroKicker}</p>
-                  <h1>{t.heroTitle}</h1>
-                  <p class="hero-body">{t.heroBody}</p>
-                </div>
-                {skin === "default" ? (
-                  <div class="seal" aria-hidden="true">
-                    <Eye size={72} />
-                  </div>
-                ) : (
-                  <SkinBanner skin={skin} lang={lang} />
-                )}
+                <h1>{t.heroTitle}</h1>
+                <SkinBanner skin={skin} lang={lang} />
               </section>
             )}
 
             {finished ? (
               <>
                 {justUnlocked && <UnlockCard skin={justUnlocked} lang={lang} onRevert={() => changeSkin("default")} />}
-                <PersonnelFile summary={summary} lang={lang} onRetake={retake} />
+                <PersonnelFile summary={summary} setTitle={set.title[lang]} lang={lang} onRetake={retake} />
               </>
             ) : (
               <QuestionSheet
@@ -255,12 +248,12 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
       </div>
 
       <footer class="colophon">
-        <Eye size={36} />
-        <p>{t.footerNote}</p>
         <p>
-          <a href={DATASET_URL} target="_blank" rel="noopener">
-            NousResearch/arete-data-pairs
-          </a>
+          {t.footerNote(
+            <a href={DATASET_URL} target="_blank" rel="noopener">
+              NousResearch/arete-data-pairs
+            </a>
+          )}
         </p>
       </footer>
 
@@ -295,13 +288,18 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
           </div>
           <h3 class="kicker">{t.musicTitle}</h3>
           <p>
-            <a href={MUSIC.page} target="_blank" rel="noopener">
-              {MUSIC.artist} – “{MUSIC.title}” ↗
+            <a href={track.page} target="_blank" rel="noopener">
+              {track.artist} – “{track.title}” ↗
             </a>
-            {t.musicCredit(MUSIC.release, MUSIC.label, MUSIC.year)}
-            <a href={MUSIC.licenseUrl} target="_blank" rel="noopener">
-              {MUSIC.license}
-            </a>
+            {t.musicCredit(track.release, track.label, track.year)}
+            {track.license && (
+              <>
+                {t.licensed}
+                <a href={track.license.url} target="_blank" rel="noopener">
+                  {track.license.name}
+                </a>
+              </>
+            )}
           </p>
           <h3 class="kicker">{t.upcoming}</h3>
           <ul class="papers">
@@ -343,10 +341,7 @@ function QuestionSheet({ item, index, total, lang, zh, original, onToggleOrigina
   return (
     <article class="sheet">
       <header class="band">
-        <span class="band-org">
-          <Eye size={22} />
-          {t.questionOf(index + 1, total)}
-        </span>
+        <span class="band-org">{t.questionOf(index + 1, total)}</span>
         <span class="band-ref">{t.topics[q.topic]}</span>
       </header>
       <div class="sheet-main">
@@ -372,7 +367,6 @@ function QuestionSheet({ item, index, total, lang, zh, original, onToggleOrigina
           ))}
         </div>
 
-        <p class="choose kicker">{t.choose}</p>
         <div class="options">
           {item.order.map((model, slot) => (
             <Option
@@ -431,28 +425,24 @@ function Option({ letter, html, lang, textLang, side, dim, disabled, onPick }: O
 
   return (
     <section class="option" data-side={side} data-dim={dim || undefined} data-open={open || undefined} data-clipped={clipped || undefined} aria-label={letter}>
-      <span class="option-key" aria-hidden="true">
-        {letter}
-      </span>
       {/* Pre-rendered at build time from dataset Markdown, with raw HTML escaped (see lib/markdown.ts). */}
       <div class="answer" ref={answer} lang={textLang} dangerouslySetInnerHTML={{ __html: html }} />
       <div class="option-foot">
         <button class="link more" aria-expanded={open} hidden={!clipped && !open} onClick={() => setOpen(!open)}>
           {open ? t.collapse : t.expand}
         </button>
-        <button class="button primary pick" disabled={disabled} onClick={onPick} aria-keyshortcuts={`${letter} ${arrow}`} title={t.keyHint(arrowKey, letter)}>
+        <button class="button pick" disabled={disabled} onClick={onPick} aria-keyshortcuts={`${letter} ${arrow}`} title={t.keyHint(arrowKey, letter)}>
           {t.pick(letter)}
-          <span class="keys" aria-hidden="true">
-            <kbd>{arrowKey}</kbd>
-            <kbd>{letter}</kbd>
-          </span>
+          <kbd class="keys" aria-hidden="true">
+            {arrowKey}
+          </kbd>
         </button>
       </div>
     </section>
   );
 }
 
-/** Small round colour chips, one per theme: a theme switch that looks like the themes it switches to. */
+/** Small colour chips, one per theme: a theme switch that looks like the themes it switches to. */
 function Swatches({
   skins,
   active,

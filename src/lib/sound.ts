@@ -1,6 +1,6 @@
 // Three physical sounds, synthesised on demand: a typewriter key, a rubber stamp, a station chime.
-// Plus one background track, which follows the same switch.
-import { MUSIC } from "../data/music";
+// Plus one background track per theme, which follows the same switch.
+import { MUSIC, type Track } from "../data/music";
 
 const STORAGE_KEY = "human-rlhf:sound";
 
@@ -27,8 +27,28 @@ export function setSound(on: boolean) {
   syncMusic();
 }
 
-let music: HTMLAudioElement | undefined;
+const MUSIC_VOLUME = 0.2;
+const FADE_IN_S = 3;
+const FADE_OUT_S = 1;
+
+interface Player {
+  el: HTMLAudioElement;
+  gain: GainNode;
+  stop?: ReturnType<typeof setTimeout>;
+}
+
+let music: Player | undefined;
 let musicWanted = false;
+let track = MUSIC.default;
+
+/** Swap to another theme's track: the old one fades out while the new one fades in. */
+export function setTrack(next: Track) {
+  if (next === track) return;
+  track = next;
+  if (music) fadeOut(music, true);
+  music = undefined;
+  syncMusic();
+}
 
 /** Call from a click or key press: browsers only let audio start after one. */
 export function startMusic() {
@@ -36,15 +56,50 @@ export function startMusic() {
   syncMusic();
 }
 
-function syncMusic() {
-  if (!musicWanted || !enabled || document.hidden) return music?.pause();
-  music ??= Object.assign(new Audio(MUSIC.file), { loop: true, volume: 0.3, preload: "none" });
-  void music.play();
+/** Fades in along a straight line, which starts gently to the ear, and fades out on an exponential tail. */
+function ramp(player: Player, to: number, seconds: number) {
+  const g = player.gain.gain;
+  const t = player.gain.context.currentTime;
+  g.cancelScheduledValues(t);
+  g.setValueAtTime(g.value, t);
+  if (to > g.value) g.linearRampToValueAtTime(to, t + seconds);
+  else g.setTargetAtTime(to, t, seconds / 4);
 }
 
-// A hidden tab goes quiet and picks up where it left off when it comes back.
-document.addEventListener("visibilitychange", syncMusic);
+function fadeOut(player: Player, discard: boolean) {
+  ramp(player, 0, FADE_OUT_S);
+  clearTimeout(player.stop);
+  player.stop = setTimeout(() => {
+    player.el.pause();
+    if (discard) player.el.removeAttribute("src");
+  }, FADE_OUT_S * 1000);
+}
 
+function syncMusic() {
+  if (!musicWanted || !enabled || document.hidden) {
+    if (music) fadeOut(music, false);
+    return;
+  }
+  const ac = audio()!;
+  if (!music) {
+    // Volume on a media element is read-only on iOS, so the fades go through Web Audio; that needs CORS, which the Internet Archive allows.
+    const el = new Audio();
+    el.crossOrigin = "anonymous";
+    el.loop = true;
+    el.preload = "none";
+    el.src = track.file;
+    const gain = ac.createGain();
+    gain.gain.value = 0;
+    ac.createMediaElementSource(el).connect(gain).connect(ac.destination);
+    music = { el, gain };
+  }
+  clearTimeout(music.stop);
+  void music.el.play();
+  ramp(music, MUSIC_VOLUME, FADE_IN_S);
+}
+
+// A hidden tab fades out and picks up where it left off when it comes back.
+document.addEventListener("visibilitychange", syncMusic);
 function audio(): AudioContext | undefined {
   if (!enabled) return;
   ctx ??= new AudioContext({ latencyHint: "interactive" });
