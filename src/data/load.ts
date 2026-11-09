@@ -13,29 +13,28 @@ const HH_MODEL = "Anthropic 52B context-distilled language model";
 const BT_MODEL = "Alpaca-7B";
 
 interface RawAnswer {
-  model?: string;
   text: string;
   id?: string;
   categories?: string[];
 }
 
-interface RawQuestion {
+interface RawQuestion<A extends RawAnswer> {
   id: string;
   topic: string;
   prompt: string;
-  answers: Record<string, RawAnswer>;
+  answers: Record<string, A>;
 }
 
-function buildAnswer(raw: RawAnswer, defaultModel?: string): AnswerItem {
+function buildAnswer<A extends RawAnswer>(raw: A, model: string): AnswerItem {
   return {
-    model: raw.model ?? defaultModel!,
+    model,
     html: renderMarkdown(raw.text),
     ...(raw.id && { id: raw.id }),
     ...(raw.categories && { categories: raw.categories })
   };
 }
 
-function loadSet(rows: readonly RawQuestion[], set: SetId, sides: [SideKey, SideKey], defaultModel?: string): Question[] {
+function loadSet<A extends RawAnswer>(rows: readonly RawQuestion<A>[], set: SetId, sides: [SideKey, SideKey], modelOf: (answer: A) => string): Question[] {
   const [sideA, sideB] = sides;
   return rows.map((r) => ({
     id: r.id,
@@ -44,8 +43,8 @@ function loadSet(rows: readonly RawQuestion[], set: SetId, sides: [SideKey, Side
     prompt: r.prompt,
     sides,
     answers: {
-      [sideA]: buildAnswer(r.answers[sideA], defaultModel),
-      [sideB]: buildAnswer(r.answers[sideB], defaultModel)
+      [sideA]: buildAnswer(r.answers[sideA], modelOf(r.answers[sideA])),
+      [sideB]: buildAnswer(r.answers[sideB], modelOf(r.answers[sideB]))
     },
     longest: Math.max(r.answers[sideA].text.trim().length, r.answers[sideB].text.trim().length)
   }));
@@ -73,9 +72,9 @@ function loadTranslationsForSet(rows: readonly RawTranslation[], sides: [SideKey
 
 export function loadAllQuestions(): Record<SetId, Question[]> {
   return {
-    china: loadSet(areteEn as RawQuestion[], "china", ["qwen", "inkling"]),
-    "hh-rlhf": loadSet(hhEn as RawQuestion[], "hh-rlhf", ["chosen", "rejected"], HH_MODEL),
-    beavertails: loadSet(btEn as RawQuestion[], "beavertails", ["safe", "unsafe"], BT_MODEL)
+    china: loadSet(areteEn as RawQuestion<RawAnswer & { model: string }>[], "china", ["qwen", "inkling"], (a) => a.model),
+    "hh-rlhf": loadSet(hhEn as RawQuestion<RawAnswer>[], "hh-rlhf", ["chosen", "rejected"], () => HH_MODEL),
+    beavertails: loadSet(btEn as RawQuestion<RawAnswer>[], "beavertails", ["safe", "unsafe"], () => BT_MODEL)
   };
 }
 

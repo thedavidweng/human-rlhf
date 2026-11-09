@@ -11,6 +11,7 @@ const result = await Bun.build({
   minify: true,
   splitting: true,
   define: { "process.env.NODE_ENV": '"production"' },
+  publicPath: "/",
   naming: { chunk: "assets/[name]-[hash].[ext]", asset: "assets/[name]-[hash].[ext]" }
 });
 if (!result.success) throw new AggregateError(result.logs, "Build failed");
