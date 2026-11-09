@@ -302,7 +302,6 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
             <a href={MUSIC.licenseUrl} target="_blank" rel="noopener">
               {MUSIC.license}
             </a>
-            {t.musicNote}
           </p>
           <h3 class="kicker">{t.upcoming}</h3>
           <ul class="papers">
