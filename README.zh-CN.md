@@ -8,7 +8,7 @@
 
 [English](README.md) | 简体中文
 
-[**马上试试 →**](https://human-rlhf.winter-sound-e30a.workers.dev) · [数据集](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
+[**马上试试 →**](https://human-rlhf.davidweng.workers.dev) · [数据集](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
 
 ![Bun](https://img.shields.io/badge/Bun-1.4-000?logo=bun&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178c6?logo=typescript&logoColor=fff)
@@ -39,7 +39,7 @@ RLHF 指的是用人类在两个回答之间的选择来训练模型。这个网
 
 ## 隐藏主题
 
-一轮里多数选了哪一边，就解锁哪一边的主题。等不及的话，“这是什么”里的“通关奖励”可以直接全部解锁。
+一轮里多数选了哪一边，就解锁哪一边的主题。解锁后可以用顶栏的色板切换。
 
 <table>
   <tr>

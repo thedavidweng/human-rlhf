@@ -10,7 +10,8 @@ const ACTIVE_KEY = "human-rlhf:skin";
 /** The condensed display face only the hidden themes use, fetched the first time one is switched on. */
 let fontLoad: Promise<void> | undefined;
 export function loadSkinFont() {
-  fontLoad ??= new FontFace("Archivo Condensed", `url(${fontUrl}) format("woff2")`, { weight: "700 900", stretch: "62% 80%" })
+  // The import gives a path relative to this module; FontFace resolves against the page, so make it absolute.
+  fontLoad ??= new FontFace("Archivo Condensed", `url(${new URL(fontUrl, import.meta.url).href}) format("woff2")`, { weight: "700 900", stretch: "62% 80%" })
     .load()
     .then((face) => void document.fonts.add(face));
   return fontLoad;

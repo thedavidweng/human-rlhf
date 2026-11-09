@@ -6,7 +6,7 @@
     "dev": "bun --hot ./src/index.html",
     "build": "bun scripts/build.ts",
     "check": "tsc --noEmit && bun test",
-    "deploy": "bun run build && cf deploy --prebuilt"
+    "deploy": "bun run build && CLOUDFLARE_ACCOUNT_ID=99e63a7c867f83d0d7806e0e6cd09933 cf deploy --prebuilt"
   },
   "dependencies": {
     "preact": "^11.2.0"

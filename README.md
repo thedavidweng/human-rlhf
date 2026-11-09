@@ -8,7 +8,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-[**Try it →**](https://human-rlhf.winter-sound-e30a.workers.dev) · [Dataset](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
+[**Try it →**](https://human-rlhf.davidweng.workers.dev) · [Dataset](https://huggingface.co/datasets/NousResearch/arete-data-pairs)
 
 ![Bun](https://img.shields.io/badge/Bun-1.4-000?logo=bun&logoColor=fff)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7-3178c6?logo=typescript&logoColor=fff)
@@ -39,7 +39,7 @@ Every question comes from Nous Research's [arete-data-pairs](https://huggingface
 
 ## Hidden themes
 
-Finish a round mostly on one side and that side's theme unlocks. Can't wait? "Completion rewards" under *What is this* hands both over.
+Finish a round mostly on one side and that side's theme unlocks. Unlocked themes can be switched from the swatches in the top bar.
 
 <table>
   <tr>

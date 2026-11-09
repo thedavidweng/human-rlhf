@@ -159,16 +159,7 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
             {t.about}
           </button>
           {unlocked.length > 0 && (
-            <label class="skin-picker">
-              <span>{t.skin}</span>
-              <select value={skin} onChange={(e) => changeSkin(e.currentTarget.value as Skin)}>
-                {(["default", ...unlocked] as Skin[]).map((s) => (
-                  <option key={s} value={s}>
-                    {t.skins[s]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <Swatches skins={["default", ...unlocked]} active={skin} lang={lang} onPick={changeSkin} />
           )}
           <button class="link icon" aria-label={t.sound(sound)} title={t.sound(sound)} onClick={toggleSound}>
             <SpeakerIcon on={sound} />
@@ -255,24 +246,13 @@ export function App({ lang: firstLang, preloaded }: { lang: Language; preloaded:
           ))}
           <h3 class="kicker">{t.rewardTitle}</h3>
           <div class="reward">
+            <p>{t.rewardRule}</p>
             {unlocked.length < ALL_SKINS.length ? (
-              <>
-                <p>{t.rewardLocked}</p>
-                <button type="button" class="button primary" onClick={() => setUnlocked(ALL_SKINS)}>
-                  {t.rewardUnlock}
-                </button>
-              </>
+              <button type="button" class="link quiet" onClick={() => setUnlocked(ALL_SKINS)}>
+                {t.rewardUnlock}
+              </button>
             ) : (
-              <>
-                <p>{t.rewardUnlocked}</p>
-                <div class="reward-skins">
-                  {(["default", ...ALL_SKINS] as Skin[]).map((s) => (
-                    <button type="button" key={s} class="button" aria-pressed={skin === s} onClick={() => changeSkin(s)}>
-                      {t.skins[s]}
-                    </button>
-                  ))}
-                </div>
-              </>
+              <Swatches skins={["default", ...ALL_SKINS]} active={skin} lang={lang} onPick={changeSkin} labelled />
             )}
           </div>
           <h3 class="kicker">{t.upcoming}</h3>
@@ -421,6 +401,21 @@ function Option({ letter, html, lang, textLang, side, dim, disabled, onPick }: O
         </button>
       </div>
     </section>
+  );
+}
+
+/** Small round colour chips, one per theme: a theme switch that looks like the themes it switches to. */
+function Swatches({ skins, active, lang, onPick, labelled = false }: { skins: Skin[]; active: Skin; lang: Language; onPick: (s: Skin) => void; labelled?: boolean }) {
+  const t = I18N[lang];
+  return (
+    <div class="swatches" role="group" aria-label={t.skin} data-labelled={labelled || undefined}>
+      {skins.map((s) => (
+        <button type="button" key={s} class="swatch-button" aria-pressed={active === s} title={t.skins[s]} aria-label={labelled ? undefined : t.skins[s]} onClick={() => onPick(s)}>
+          <span class="swatch" data-swatch={s} aria-hidden="true" />
+          {labelled && <span>{t.skins[s]}</span>}
+        </button>
+      ))}
+    </div>
   );
 }
 

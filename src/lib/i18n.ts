@@ -66,9 +66,8 @@ const zh = {
   unlockedHint: "已为你换上。随时可以在顶栏的“主题”里换回标准主题。",
   backToDefault: "换回标准主题",
   rewardTitle: "通关奖励",
-  rewardLocked: "答完一轮，选 Qwen3.8-27B 多就解锁“红色年代”，选 Inkling 多就解锁“自由至上”。不想答也行，直接拿走：",
-  rewardUnlock: "直接解锁全部主题",
-  rewardUnlocked: "全部主题已解锁。在这里或顶栏的“主题”里切换：",
+  rewardRule: "答完一轮，选 Qwen3.8-27B 多解锁“红色年代”，选 Inkling 多解锁“自由至上”。",
+  rewardUnlock: "解锁全部主题",
   archetypes: {
     mostlyQwen: "几乎总选 Qwen3.8-27B",
     leanQwen: "偏向 Qwen3.8-27B",
@@ -144,9 +143,8 @@ const en: Dict = {
   unlockedHint: "It’s on now. Switch back any time from “Theme” in the top bar.",
   backToDefault: "Back to standard",
   rewardTitle: "Completion rewards",
-  rewardLocked: "Finish a round mostly choosing Qwen3.8-27B to unlock “Red Era”, or mostly Inkling to unlock “Maximum Freedom”. Or skip the work and take them now:",
+  rewardRule: "Finish a round mostly choosing Qwen3.8-27B to unlock “Red Era”, or mostly Inkling to unlock “Maximum Freedom”.",
   rewardUnlock: "Unlock all themes",
-  rewardUnlocked: "All themes unlocked. Switch here or from “Theme” in the top bar:",
   archetypes: {
     mostlyQwen: "Almost always Qwen3.8-27B",
     leanQwen: "Leans Qwen3.8-27B",
